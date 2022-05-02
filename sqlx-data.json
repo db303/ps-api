@@ -29,19 +29,6 @@
     },
     "query": "DELETE FROM activation_tokens WHERE activation_token = $1"
   },
-  "2adf40d185d73aed55f6de2e0d8898c44837d28bf2f71cccd954d9bec76f1990": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n    INSERT INTO activation_tokens (activation_token, user_id)\n    VALUES ($1, $2)\n        "
-  },
   "2cbdf5c505a0a7d65eb01c482a4ab9378701e7d675d45e4fcb7404aba853d589": {
     "describe": {
       "columns": [],
@@ -74,18 +61,19 @@
     },
     "query": "SELECT user_id FROM activation_tokens WHERE activation_token = $1"
   },
-  "500851e86e8172a0e75a944f7949a542fd3d14ebeab2948079e64a9d74c8d1a2": {
+  "376b2b0dd2d38bb07c0c87f6bfdf8b459e44fc378bf6ab95bb36f9cd0d68074d": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
         "Left": [
           "Text",
-          "Uuid"
+          "Uuid",
+          "Timestamptz"
         ]
       }
     },
-    "query": "\n    INSERT INTO password_reset_tokens (reset_token, user_id)\n    VALUES ($1, $2)\n        "
+    "query": "\n    INSERT INTO password_reset_tokens (reset_token, user_id, created_at)\n    VALUES ($1, $2, $3)\n        "
   },
   "569527c5c0423025018714cbd2f7395e7191ef1a9a69ec4ed24cfc43b034d3a9": {
     "describe": {
@@ -118,6 +106,36 @@
       }
     },
     "query": "SELECT user_id, username, email FROM users WHERE email = $1"
+  },
+  "5fd9d7b7c956a3000fea86d3ee28c5e838878484f67c7ddc6a7d0a6238ae474c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n    INSERT INTO activation_tokens (activation_token, user_id, created_at)\n    VALUES ($1, $2, $3)\n        "
+  },
+  "86384d74e2cbc665d79414ef9dffd21a31f2a0a64eedc5387d35142b63b3169a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text",
+          "Text",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n    INSERT INTO users (user_id, username, email, password_hash, created_at)\n    VALUES ($1, $2, $3, $4, $5)\n            "
   },
   "8ab9e7fbdf096c49839619833d6124d3aedab1ff42c3f9ae6a70be30adad217a": {
     "describe": {
@@ -220,21 +238,6 @@
       }
     },
     "query": "DELETE FROM activation_tokens WHERE user_id = $1"
-  },
-  "c4b75cee5d91105937e2479689345d5cfefb008a3357c349bb5497f5bfefd9f0": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Text",
-          "Text",
-          "Text"
-        ]
-      }
-    },
-    "query": "\n    INSERT INTO users (user_id, username, email, password_hash)\n    VALUES ($1, $2, $3, $4)\n            "
   },
   "e21e0afe3dc2a78bc8c6a402a63a1da64894ac242b4cf5bbbadcf3cb2aa3ef56": {
     "describe": {
