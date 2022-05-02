@@ -1,0 +1,284 @@
+{
+  "db": "PostgreSQL",
+  "1152abd0d27e6c6fd45ed862c940400e09e0a9eb11eeef2aeb29f479d9a15076": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text",
+          "Json",
+          "Uuid",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO patterns (id, name, device, data, user_id, created_at)\n        VALUES ($1, $2, $3, $4, $5, $6)\n        "
+  },
+  "2522f7a51a1b4ccaf44bb48216549350718aa12c433a9142c0a60f3c81516a28": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "DELETE FROM activation_tokens WHERE activation_token = $1"
+  },
+  "2adf40d185d73aed55f6de2e0d8898c44837d28bf2f71cccd954d9bec76f1990": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n    INSERT INTO activation_tokens (activation_token, user_id)\n    VALUES ($1, $2)\n        "
+  },
+  "2cbdf5c505a0a7d65eb01c482a4ab9378701e7d675d45e4fcb7404aba853d589": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM password_reset_tokens WHERE user_id = $1"
+  },
+  "3064bb964f8e3a836da35aefd11d325cc36564776e444d674bd2e2f7aba58969": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id FROM activation_tokens WHERE activation_token = $1"
+  },
+  "500851e86e8172a0e75a944f7949a542fd3d14ebeab2948079e64a9d74c8d1a2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n    INSERT INTO password_reset_tokens (reset_token, user_id)\n    VALUES ($1, $2)\n        "
+  },
+  "569527c5c0423025018714cbd2f7395e7191ef1a9a69ec4ed24cfc43b034d3a9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id, username, email FROM users WHERE email = $1"
+  },
+  "8ab9e7fbdf096c49839619833d6124d3aedab1ff42c3f9ae6a70be30adad217a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id, username, email, password_hash FROM users WHERE username = $1"
+  },
+  "bc3f75a78c76277aa41913dd9190700e058a04430e89f5d61023d12b1bece1a3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "status",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT user_id, status, password_hash\n        FROM users\n        WHERE username = $1\n        "
+  },
+  "c14ad9a143a3860ca30aef91a376e11a59df858f2dd52173305a2ba77c4a7d94": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id FROM password_reset_tokens WHERE reset_token = $1"
+  },
+  "c326dffcdedead78e768107956edf15f8dc8c6619574671480689829c2ad625e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM activation_tokens WHERE user_id = $1"
+  },
+  "c4b75cee5d91105937e2479689345d5cfefb008a3357c349bb5497f5bfefd9f0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n    INSERT INTO users (user_id, username, email, password_hash)\n    VALUES ($1, $2, $3, $4)\n            "
+  },
+  "e21e0afe3dc2a78bc8c6a402a63a1da64894ac242b4cf5bbbadcf3cb2aa3ef56": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "UPDATE users SET status = 'active' WHERE user_id = $1"
+  },
+  "efa7b0d2eed28ce72deb9ab8024f835214692fae36101518a790ebf9f0d4e2f5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT user_id FROM users WHERE email = $1"
+  },
+  "fc7aca8a6b90302b435d149ea4917beac0c35987d06aee881d820f774395cf63": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "UPDATE users SET password_hash = $1 where user_id = $2"
+  }
+}
