@@ -1,7 +1,8 @@
 application:
   host: 0.0.0.0
+  base_url: "https://patternsaver.com"
 database:
   require_ssl: true
 email_client:
-  base_url: "https://api.mailjet.com/v3.1/send",
+  base_url: "https://api.mailjet.com/v3.1/send"
   sender_email: "info@patternsaver.com"
