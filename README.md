@@ -1,108 +1,161 @@
-## Getting started
+# Getting Started
 
-### Installing rust toolchain
+This guide will help you set up your development environment and deploy the application. It covers installing the Rust toolchain, setting up the database, deploying the application on Digital Ocean, and includes sections on continuous integration practices.
 
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+## Prerequisites
 
-&nbsp;
+Ensure you have `curl` installed on your system to fetch remote content.
 
-    rustup toolchain install nightly --allow-downgrade
+### Installing Rust Toolchain
 
-### Database set up
+To install Rust and its toolchain, run:
 
-#### Installing sqlx-cli
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-    cargo install --locked sqlx-cli --no-default-features --features postgres```
+Then, install the nightly toolchain:
 
-#### Run db migrations locally
+```bash
+rustup toolchain install nightly --allow-downgrade
+```
 
-    SKIP_DOCKER=true ./scripts/init_db.sh
+## Database Setup
 
+### Installing sqlx-cli for PostgreSQL
+```bash
+cargo install --locked sqlx-cli --no-default-features --features postgres
+```
 
-### Deployment
+### Running Database Migrations Locally
+To initialize the database, run:
 
-The application is hosted on Digital Ocean's Apps platform. 
+```bash
+SKIP_DOCKER=true ./scripts/init_db.sh
+```
 
-#### Installing Digital Oceans CLI
+## Deployment on Digital Ocean
 
-https://www.digitalocean.com/docs/apis-clis/doctl/how-to/install/
+### Prerequisites
+Install the Digital Ocean CLI ([DOCTL](https://www.digitalocean.com/docs/apis-clis/doctl/how-to/install/))
 
-#### Creating an app on Digital Ocean
+### Creating an App on Digital Ocean
 
-    doctl apps create --spec spec.yaml
+```bash
+doctl apps create --spec spec.yaml
+```
 
-#### List apps on Digital Ocean
+### Managing Apps on Digital Ocean
 
-    doctl apps list
+List existing apps:
 
-#### Updating app on Digital Ocean
+```bash
+doctl apps list
+```
 
-    doctl apps update YOUR-APP-ID --spec=spec.yaml
+Update existing app
+```bash
+doctl apps update YOUR-APP-ID --spec=spec.yaml
+```
 
-#### Running db migrations on production
-    DATABASE_URL=YOUR-DIGITAL-OCEAN-DB-CONNECTION-STRING sqlx migrate run
+### Running Database Migrations on Production
+```bash
+DATABASE_URL=YOUR-DIGITAL-OCEAN-DB-CONNECTION-STRING sqlx migrate run
+```
 
-### Continuous Integration
+## Continuous Integration
 
-#### Tests
-Running unit and integration tests
+### Running Tests
+To run unit and integration tests:
 
-    cargo test
+```bash
+cargo test
+```
 
+To run a specific test with logs:
 
-Running single test with logs
-    
-    export RUST_LOG="sqlx=error,info"
-    export TEST_LOG=enabled
-    TEST_LOG=true cargo test health_check_works | bunyan
+```bash
+export RUST_LOG="sqlx=error,info"
+export TEST_LOG=enabled
+TEST_LOG=true cargo test health_check_works | bunyan
+```
 
+### Code Coverage
+Install cargo-tarpaulin:
 
-#### Code coverage
+```bash
+cargo install cargo-tarpaulin
+```
+Generate a code coverage report:
 
-Install tarpaulin locally  with
+```bash
+cargo tarpaulin --ignore-tests
+```
 
-    cargo install cargo-tarpaulin
+### Linting with Clippy
+Install clippy:
 
-Run code coverage report locally with
+```bash
+rustup component add clippy
+```
 
-    cargo tarpaulin --ignore-tests
+Run clippy on the project:
 
-#### Linting
+```bash
+cargo clippy
+```
 
-Installing clippy locally
+### Formatting with rustfmt
+Install rustfmt:
 
-    rustup component add clippy
+```bash
+rustup component add rustfmt
+```
 
-Running clippy on project
+Format the project:
 
-    cargo clippy
+```bash
+cargo fmt
+```
 
-#### Formatting
+### Checking for Security Vulnerabilities
+Install cargo-audit:
 
-Installing rustfmt locally
+```bash
+cargo install cargo-audit
+```
 
-    rustup component add rustfmt
+Scan the dependency tree:
 
-Running rustfmt on project
+```bash
+cargo audit
+```
 
-    cargo fmt
+### Using Cargo Watch
+Install and use cargo-watch for automatic checking:
 
-#### Security vulnerabilities
+```bash
+cargo install cargo-watch
+cargo watch -x check
+```
 
-Installing cargo audit locally
+For checking, testing, and running:
 
-    cargo install cargo-audit
+```bash
+cargo watch -x check -x test -x "run | bunyan"
+```
 
-Scanning dependency tree with cargo audit
+## Working with SQLx
+To run migrations
 
-    cargo audit
+```bash
+sqlx migrate run
+```
 
-#### Cargo watch
+To initialize the database without Docker:
 
-    cargo install cargo-watch
-    cargo watch -x check
-    cargo watch -x check -x test -x "run | bunyan"
-
-### Sqlx 
-    sqlx migrate run
-    SKIP_DOCKER=true ./scripts/init_db.sh
+```bash
+sqlx migrate run
+SKIP_DOCKER=true ./scripts/init_db.sh
+```
+ 
