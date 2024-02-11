@@ -36,7 +36,7 @@ pub async fn activate_resend(
     email_client: web::Data<EmailClient>,
     base_url: web::Data<ApplicationBaseUrl>,
 ) -> Result<HttpResponse, ActivationResendError> {
-    let _user = if let Some(user) = get_user_from_email(&pool, &request.0.email)
+    if let Some(user) = get_user_from_email(&pool, &request.0.email)
         .await
         .map_err(ActivationResendError::UnexpectedError)?
     {
