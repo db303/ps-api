@@ -13,12 +13,13 @@ name = "ps-api"
 
 [dependencies]
 actix-web = "4.5.1"
-tokio = { version = "1", features = ["macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = "1.0.115"
-config = { version = "0.10.1", default-features = false, features = ["yaml"] }
+config = { version = "0.14", default-features = false, features = ["yaml"] }
 sqlx = { version = "0.5.1", default-features = false, features = [ "runtime-actix-rustls", "macros", "postgres", "uuid", "chrono", "migrate", "offline", "json"] }
 uuid = { version = "0.8.1", features = ["v4", "serde"] }
 chrono = "0.4.34"
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls", "cookies"] }
 log = "0.4"
 tracing = "0.1.32"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
@@ -38,11 +39,6 @@ secrecy = { version = "0.8", features = ["serde"] }
 fancy-regex = "0.8"
 actix-web-lab = "0.15"
 actix-session = { version = "0.7", features = ["redis-rs-tls-session"] }
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["json", "rustls-tls", "cookies"]
 
 
 [dev-dependencies]
