@@ -1,3 +1,4 @@
+use sqlx::query;
 use {
     crate::domain::{User, UserEmail, UserName},
     crate::email_client::EmailClient,
@@ -7,7 +8,7 @@ use {
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
     chrono::Utc,
-    sqlx::{PgPool, Postgres, Transaction},
+    sqlx::{Executor, PgPool, Postgres, Transaction},
     std::collections::HashMap,
     uuid::Uuid,
 };
@@ -134,12 +135,11 @@ pub async fn delete_password_reset_token(
     transaction: &mut Transaction<'_, Postgres>,
     user_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"DELETE FROM password_reset_tokens WHERE user_id = $1"#,
         user_id,
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(())
 }
 
@@ -179,7 +179,7 @@ pub async fn store_password_reset_token(
     user_id: Uuid,
     reset_token: &str,
 ) -> Result<(), StoreTokenError> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
     INSERT INTO password_reset_tokens (reset_token, user_id, created_at)
     VALUES ($1, $2, $3)
@@ -187,10 +187,8 @@ pub async fn store_password_reset_token(
         reset_token,
         user_id,
         Utc::now()
-    )
-    .execute(transaction)
-    .await
-    .map_err(StoreTokenError)?;
+    );
+    transaction.execute(query).await.map_err(StoreTokenError)?;
     Ok(())
 }
 

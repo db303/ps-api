@@ -1,3 +1,4 @@
+use sqlx::{Executor, query};
 use {
     crate::domain::{UserEmail, UserName},
     crate::email_client::EmailClient,
@@ -88,12 +89,12 @@ pub async fn delete_user_activation_token(
     transaction: &mut Transaction<'_, Postgres>,
     user_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"DELETE FROM activation_tokens WHERE user_id = $1"#,
         user_id,
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
+
     Ok(())
 }
 

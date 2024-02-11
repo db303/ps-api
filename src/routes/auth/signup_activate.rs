@@ -1,3 +1,4 @@
+use sqlx::{Executor, query};
 use {
     crate::utils::{error_chain_fmt, get_error_response, get_fail_response},
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
@@ -54,12 +55,12 @@ pub async fn activate_user(
     transaction: &mut Transaction<'_, Postgres>,
     user_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"UPDATE users SET status = 'active' WHERE user_id = $1"#,
         user_id,
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
+
     Ok(())
 }
 
@@ -82,12 +83,11 @@ pub async fn delete_activation_token(
     transaction: &mut Transaction<'_, Postgres>,
     activation_token: &str,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"DELETE FROM activation_tokens WHERE activation_token = $1"#,
         activation_token,
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(())
 }
 

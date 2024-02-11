@@ -1,3 +1,4 @@
+use sqlx::query;
 use {
     crate::domain::{NewUser, UserEmail, UserName, UserPassword},
     crate::email_client::EmailClient,
@@ -9,7 +10,7 @@ use {
     rand::distributions::Alphanumeric,
     rand::{thread_rng, Rng},
     secrecy::Secret,
-    sqlx::{PgPool, Postgres, Transaction},
+    sqlx::{Executor, PgPool, Postgres, Transaction},
     std::collections::HashMap,
     uuid::Uuid,
 };
@@ -199,7 +200,7 @@ pub async fn insert_user(
 
     let password_hash = make_password_hash(new_user.password.as_ref());
 
-    sqlx::query!(
+    let query =sqlx::query!(
         r#"
     INSERT INTO users (user_id, username, email, password_hash, created_at)
     VALUES ($1, $2, $3, $4, $5)
@@ -209,9 +210,9 @@ pub async fn insert_user(
         new_user.email.as_ref(),
         password_hash,
         Utc::now()
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
+
     Ok(user_id)
 }
 
@@ -264,7 +265,7 @@ pub async fn store_token(
     user_id: Uuid,
     activation_token: &str,
 ) -> Result<(), StoreTokenError> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
     INSERT INTO activation_tokens (activation_token, user_id, created_at)
     VALUES ($1, $2, $3)
@@ -272,10 +273,8 @@ pub async fn store_token(
         activation_token,
         user_id,
         Utc::now()
-    )
-    .execute(transaction)
-    .await
-    .map_err(StoreTokenError)?;
+    );
+    transaction.execute(query).await.map_err(StoreTokenError)?;
     Ok(())
 }
 
