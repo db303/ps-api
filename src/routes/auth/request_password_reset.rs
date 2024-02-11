@@ -187,7 +187,10 @@ pub async fn store_password_reset_token(
         user_id,
         Utc::now()
     );
-    transaction.execute(query).await.map_err(StorePasswordResetTokenError)?;
+    transaction
+        .execute(query)
+        .await
+        .map_err(StorePasswordResetTokenError)?;
     Ok(())
 }
 

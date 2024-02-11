@@ -199,7 +199,7 @@ pub async fn insert_user(
 
     let password_hash = make_password_hash(new_user.password.as_ref());
 
-    let query =sqlx::query!(
+    let query = sqlx::query!(
         r#"
     INSERT INTO users (user_id, username, email, password_hash, created_at)
     VALUES ($1, $2, $3, $4, $5)

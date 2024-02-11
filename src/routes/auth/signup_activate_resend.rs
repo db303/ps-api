@@ -7,7 +7,7 @@ use {
     crate::utils::{error_chain_fmt, get_error_response},
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
-    sqlx::{Executor,PgPool, Postgres, Transaction},
+    sqlx::{Executor, PgPool, Postgres, Transaction},
     uuid::Uuid,
 };
 
