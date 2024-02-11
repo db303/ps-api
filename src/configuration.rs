@@ -3,7 +3,6 @@ use {
     secrecy::Secret,
     serde_aux::field_attributes::deserialize_number_from_string,
     sqlx::postgres::{PgConnectOptions, PgSslMode},
-    sqlx::ConnectOptions,
     std::convert::{TryFrom, TryInto},
 };
 

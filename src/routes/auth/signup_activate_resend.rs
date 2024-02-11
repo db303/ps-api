@@ -1,4 +1,3 @@
-use sqlx::{Executor, query};
 use {
     crate::domain::{UserEmail, UserName},
     crate::email_client::EmailClient,
@@ -8,7 +7,7 @@ use {
     crate::utils::{error_chain_fmt, get_error_response},
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
-    sqlx::{PgPool, Postgres, Transaction},
+    sqlx::{Executor,PgPool, Postgres, Transaction},
     uuid::Uuid,
 };
 
@@ -36,10 +35,10 @@ pub async fn activate_resend(
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
     base_url: web::Data<ApplicationBaseUrl>,
-) -> Result<HttpResponse, ActivationError> {
+) -> Result<HttpResponse, ActivationResendError> {
     let _user = if let Some(user) = get_user_from_email(&pool, &request.0.email)
         .await
-        .map_err(ActivationError::UnexpectedError)?
+        .map_err(ActivationResendError::UnexpectedError)?
     {
         let user_email = UserEmail::parse(user.email.as_ref().to_string()).unwrap();
         let user_name = UserName::parse(user.username.as_ref().to_string()).unwrap();
@@ -99,21 +98,21 @@ pub async fn delete_user_activation_token(
 }
 
 #[derive(thiserror::Error)]
-pub enum ActivationError {
+pub enum ActivationResendError {
     #[error("Something went wrong.")]
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl std::fmt::Debug for ActivationError {
+impl std::fmt::Debug for ActivationResendError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
     }
 }
 
-impl ResponseError for ActivationError {
+impl ResponseError for ActivationResendError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            ActivationError::UnexpectedError(_) => {
+            ActivationResendError::UnexpectedError(_) => {
                 HttpResponse::build(self.status_code()).json(get_error_response(self.to_string()))
             }
         }

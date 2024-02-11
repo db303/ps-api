@@ -1,4 +1,3 @@
-use sqlx::query;
 use {
     crate::domain::{User, UserEmail, UserName},
     crate::email_client::EmailClient,
@@ -178,7 +177,7 @@ pub async fn store_password_reset_token(
     transaction: &mut Transaction<'_, Postgres>,
     user_id: Uuid,
     reset_token: &str,
-) -> Result<(), StoreTokenError> {
+) -> Result<(), StorePasswordResetTokenError> {
     let query = sqlx::query!(
         r#"
     INSERT INTO password_reset_tokens (reset_token, user_id, created_at)
@@ -188,29 +187,29 @@ pub async fn store_password_reset_token(
         user_id,
         Utc::now()
     );
-    transaction.execute(query).await.map_err(StoreTokenError)?;
+    transaction.execute(query).await.map_err(StorePasswordResetTokenError)?;
     Ok(())
 }
 
-pub struct StoreTokenError(sqlx::Error);
+pub struct StorePasswordResetTokenError(sqlx::Error);
 
-impl std::error::Error for StoreTokenError {
+impl std::error::Error for StorePasswordResetTokenError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.0)
     }
 }
 
-impl std::fmt::Debug for StoreTokenError {
+impl std::fmt::Debug for StorePasswordResetTokenError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
     }
 }
 
-impl std::fmt::Display for StoreTokenError {
+impl std::fmt::Display for StorePasswordResetTokenError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "A database error was encountered while trying to store a signup activation token."
+            "A database error was encountered while trying to store a password reset token."
         )
     }
 }

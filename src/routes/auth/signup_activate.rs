@@ -1,9 +1,8 @@
-use sqlx::{Executor, query};
 use {
     crate::utils::{error_chain_fmt, get_error_response, get_fail_response},
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
-    sqlx::{PgPool, Postgres, Transaction},
+    sqlx::{Executor, PgPool, Postgres, Transaction},
     uuid::Uuid,
 };
 

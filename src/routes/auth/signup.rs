@@ -1,4 +1,3 @@
-use sqlx::query;
 use {
     crate::domain::{NewUser, UserEmail, UserName, UserPassword},
     crate::email_client::EmailClient,
