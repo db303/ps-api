@@ -18,7 +18,7 @@ serde = "1.0.115"
 config = { version = "0.10.1", default-features = false, features = ["yaml"] }
 sqlx = { version = "0.5.1", default-features = false, features = [ "runtime-actix-rustls", "macros", "postgres", "uuid", "chrono", "migrate", "offline", "json"] }
 uuid = { version = "0.8.1", features = ["v4", "serde"] }
-chrono = "0.4.19"
+chrono = "0.4.34"
 log = "0.4"
 tracing = "0.1.32"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
