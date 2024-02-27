@@ -27,7 +27,7 @@ impl AsRef<str> for UserPassword {
 #[cfg(test)]
 mod tests {
     use crate::domain::UserPassword;
-    use claim::{assert_err, assert_ok};
+    use claims::{assert_err, assert_ok};
 
     #[test]
     fn a_valid_password_is_accepted() {

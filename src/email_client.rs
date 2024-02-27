@@ -70,7 +70,7 @@ mod tests {
     use {
         crate::domain::UserEmail,
         crate::email_client::EmailClient,
-        claim::{assert_err, assert_ok},
+        claims::{assert_err, assert_ok},
         fake::faker::internet::en::SafeEmail,
         fake::faker::lorem::en::Sentence,
         fake::{Fake, Faker},

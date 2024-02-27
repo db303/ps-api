@@ -28,7 +28,7 @@ impl std::fmt::Display for UserEmail {
 #[cfg(test)]
 mod tests {
     use super::UserEmail;
-    use claim::assert_err;
+    use claims::assert_err;
     use fake::faker::internet::en::SafeEmail;
     use fake::Fake;
 
