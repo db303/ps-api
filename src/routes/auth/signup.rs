@@ -1,5 +1,19 @@
 use {
-    crate::{domain::{NewUser, UserEmail, UserName, UserPassword}, email_client::EmailClient, startup::ApplicationBaseUrl, utils::{error_chain_fmt, get_error_response, get_fail_response, make_password_hash}}, actix_web::{http::StatusCode, web, HttpResponse, ResponseError}, anyhow::Context, chrono::Utc, rand::{distributions::Alphanumeric, thread_rng, Rng}, secrecy::Secret, sqlx::{Executor, PgPool, Postgres, Transaction}, std::collections::HashMap, utoipa::ToSchema, uuid::Uuid
+    crate::{
+        domain::{NewUser, UserEmail, UserName, UserPassword},
+        email_client::EmailClient,
+        startup::ApplicationBaseUrl,
+        utils::{error_chain_fmt, get_error_response, get_fail_response, make_password_hash},
+    },
+    actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
+    anyhow::Context,
+    chrono::Utc,
+    rand::{distributions::Alphanumeric, thread_rng, Rng},
+    secrecy::Secret,
+    sqlx::{Executor, PgPool, Postgres, Transaction},
+    std::collections::HashMap,
+    utoipa::ToSchema,
+    uuid::Uuid,
 };
 
 const TEMPLATE_ID: u64 = 3865334;

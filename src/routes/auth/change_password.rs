@@ -5,8 +5,8 @@ use {
     anyhow::Context,
     secrecy::{ExposeSecret, Secret},
     sqlx::PgPool,
-    uuid::Uuid,
     utoipa::ToSchema,
+    uuid::Uuid,
 };
 
 #[derive(serde::Deserialize, ToSchema)]

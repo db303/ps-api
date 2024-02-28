@@ -9,8 +9,8 @@ use {
     chrono::Utc,
     sqlx::{Executor, PgPool, Postgres, Transaction},
     std::collections::HashMap,
-    uuid::Uuid,
     utoipa::ToSchema,
+    uuid::Uuid,
 };
 
 const TEMPLATE_ID: u64 = 3886368;

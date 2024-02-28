@@ -8,8 +8,8 @@ use {
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
     sqlx::{Executor, PgPool, Postgres, Transaction},
-    uuid::Uuid,
     utoipa::ToSchema,
+    uuid::Uuid,
 };
 
 const TEMPLATE_ID: u64 = 3904091;

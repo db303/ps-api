@@ -2,12 +2,7 @@ use {
     crate::authentication::reject_anonymous_users,
     crate::configuration::{DatabaseSettings, Settings},
     crate::email_client::EmailClient,
-    
-    crate::routes::{
-        health_check,
-        patterns, 
-        auth
-    },
+    crate::routes::{auth, health_check, patterns},
     crate::utils::get_error_response,
     actix_session::{storage::RedisSessionStore, SessionMiddleware},
     actix_web::{
@@ -19,7 +14,6 @@ use {
     sqlx::{postgres::PgPoolOptions, PgPool},
     std::net::TcpListener,
     tracing_actix_web::TracingLogger,
-
     utoipa::OpenApi,
     utoipa_swagger_ui::SwaggerUi,
 };
@@ -96,7 +90,6 @@ async fn run(
 
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
 
-
     #[derive(OpenApi)]
     #[openapi(
         paths(
@@ -107,20 +100,18 @@ async fn run(
             auth::request_password_reset,
             auth::change_password,
         ),
-        components(
-            schemas(
-                auth::SignupRequest,
-                auth::SignupResponse,
-                auth::LoginRequest,
-                auth::LoginResponse,
-                auth::SignupActivateResponse,
-                auth::ActivateResendRequest,
-                auth::ActivateResendResponse,
-                auth::PasswordResetRequest,
-                auth::PasswordResetResponse,
-                auth::ChangePasswordRequest,
-            )
-        )        
+        components(schemas(
+            auth::SignupRequest,
+            auth::SignupResponse,
+            auth::LoginRequest,
+            auth::LoginResponse,
+            auth::SignupActivateResponse,
+            auth::ActivateResendRequest,
+            auth::ActivateResendResponse,
+            auth::PasswordResetRequest,
+            auth::PasswordResetResponse,
+            auth::ChangePasswordRequest,
+        ))
     )]
     struct ApiDoc;
 
@@ -143,15 +134,18 @@ async fn run(
                     .route("/login", web::post().to(auth::login))
                     .route("/signup", web::post().to(auth::signup))
                     .route("/signup/activate", web::get().to(auth::activate))
-                    .route("/signup/activate/resend", web::post().to(auth::activate_resend))
+                    .route(
+                        "/signup/activate/resend",
+                        web::post().to(auth::activate_resend),
+                    )
                     .route(
                         "/change_password/request",
                         web::post().to(auth::request_password_reset),
                     )
                     .route("/change_password", web::post().to(auth::change_password)),
-            ).service(
-                SwaggerUi::new("/swagger-ui/{_:.*}")
-                    .url("/api-docs/openapi.json", openapi.clone()),
+            )
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),
             )
             .route("/health_check", web::get().to(health_check))
             .app_data(db_pool.clone())

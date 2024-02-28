@@ -3,8 +3,8 @@ use {
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
     sqlx::{Executor, PgPool, Postgres, Transaction},
-    uuid::Uuid,
     utoipa::ToSchema,
+    uuid::Uuid,
 };
 
 #[derive(serde::Deserialize, ToSchema)]
