@@ -4,24 +4,41 @@ use {
     anyhow::Context,
     sqlx::{Executor, PgPool, Postgres, Transaction},
     uuid::Uuid,
+    utoipa::ToSchema,
 };
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct Parameters {
+    #[schema(example = "2Ig5l6jcH1aZP7Ipc30XHIMEq")]
     activation_token: String,
 }
 
-#[derive(serde::Serialize)]
-pub struct Response {
+#[derive(serde::Serialize, ToSchema)]
+pub struct SignupActivateResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
+#[utoipa::path(
+    get,
+    path = "/auth/signup/activate/{activation_token}",
+    responses(
+        (status = 200, description = "User activated", body = SignupActivateResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error")
+    ),
+    params(
+        ("activation_token", description = "The activation token sent to the user's email.")
+    )
+)]
 #[tracing::instrument(name = "Activate a pending user", skip(parameters, pool))]
 pub async fn activate(
     parameters: web::Query<Parameters>,
     pool: web::Data<PgPool>,
-) -> Result<web::Json<Response>, ActivationError> {
+) -> Result<web::Json<SignupActivateResponse>, ActivationError> {
     let user_id = get_user_id_from_token(&pool, &parameters.activation_token)
         .await
         .context("Failed to retrieve the user id associated with the provided token.")?
@@ -43,7 +60,7 @@ pub async fn activate(
         .await
         .context("Failed to commit SQL transaction to activate account.")?;
 
-    Ok(web::Json(Response {
+    Ok(web::Json(SignupActivateResponse {
         status: "success".to_string(),
         data: serde_json::Value::Null,
     }))

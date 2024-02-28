@@ -1,7 +1,7 @@
 [package]
 name = "ps-api"
 version = "0.1.0"
-authors = ["db303 <nelegalus@gmail.com>"]
+authors = ["db303 <patternsaver@protonmail.com>"]
 edition = "2018"
 
 [lib]
@@ -39,7 +39,8 @@ secrecy = { version = "0.8", features = ["serde"] }
 fancy-regex = "0.8"
 actix-web-lab = "0.15"
 actix-session = { version = "0.7", features = ["redis-rs-tls-session"] }
-
+utoipa = { version = "3", features = ["actix_extras", "chrono"] }
+utoipa-swagger-ui = { version = "3", features = ["actix-web"] }
 
 [dev-dependencies]
 once_cell = "1.7.2"

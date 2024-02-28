@@ -9,23 +9,37 @@ use {
     anyhow::Context,
     sqlx::{Executor, PgPool, Postgres, Transaction},
     uuid::Uuid,
+    utoipa::ToSchema,
 };
 
 const TEMPLATE_ID: u64 = 3904091;
 const NEW_SIGNUP_ACTIVATION_EMAIL_SUBJECT: &str =
     "Your new activation email - Please activate your PatternSaver.com account";
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, ToSchema)]
 pub struct ActivateResendRequest {
+    #[schema(example = "user123@mail.com", required = true)]
     email: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 pub struct ActivateResendResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
+#[utoipa::path(
+    request_body = ActivateResendRequest,
+    post,
+    path = "/auth/signup/activate/resend",
+    responses(
+        (status = 202, description = "Activation email resent", body = ActivateResendResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(
     name = "Resend activation email",
     skip(request, pool, email_client, base_url)

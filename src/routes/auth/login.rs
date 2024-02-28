@@ -4,17 +4,22 @@ use {
     crate::utils::{error_chain_fmt, get_error_response, get_fail_response},
     actix_web::{error::InternalError, http::StatusCode, web, HttpResponse, ResponseError},
     sqlx::PgPool,
+    utoipa::ToSchema,
 };
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct LoginRequest {
+    #[schema(example = "user123", required = true)]
     username: String,
+    #[schema(example = "Password123", required = true)]
     password: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 pub struct LoginResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
@@ -24,6 +29,18 @@ pub struct LoginErrorResponse {
     message: String,
 }
 
+#[utoipa::path(
+    request_body = LoginRequest,
+    post,
+    path = "/auth/login",
+    responses(
+        (status = 200, description = "User logged in", body = LoginResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(
     skip(request, pool, session),
     fields(

@@ -10,22 +10,36 @@ use {
     sqlx::{Executor, PgPool, Postgres, Transaction},
     std::collections::HashMap,
     uuid::Uuid,
+    utoipa::ToSchema,
 };
 
 const TEMPLATE_ID: u64 = 3886368;
 const PASSWORD_RESET_EMAIL_SUBJECT: &str = "PatternSaver.com Account Password Reset Instructions";
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, ToSchema)]
 pub struct PasswordResetRequest {
+    #[schema(example = "user123@mail.com", required = true)]
     email: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 pub struct PasswordResetResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
+#[utoipa::path(
+    request_body = PasswordResetRequest,
+    post,
+    path = "/auth/change_password/request",
+    responses(
+        (status = 202, description = "Password reset email sent", body = PasswordResetResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(
     name = "Send password reset email",
     skip(request, pool, email_client, base_url)

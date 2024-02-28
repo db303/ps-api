@@ -1,33 +1,26 @@
 use {
-    crate::domain::{NewUser, UserEmail, UserName, UserPassword},
-    crate::email_client::EmailClient,
-    crate::startup::ApplicationBaseUrl,
-    crate::utils::{error_chain_fmt, get_error_response, get_fail_response, make_password_hash},
-    actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
-    anyhow::Context,
-    chrono::Utc,
-    rand::distributions::Alphanumeric,
-    rand::{thread_rng, Rng},
-    secrecy::Secret,
-    sqlx::{Executor, PgPool, Postgres, Transaction},
-    std::collections::HashMap,
-    uuid::Uuid,
+    crate::{domain::{NewUser, UserEmail, UserName, UserPassword}, email_client::EmailClient, startup::ApplicationBaseUrl, utils::{error_chain_fmt, get_error_response, get_fail_response, make_password_hash}}, actix_web::{http::StatusCode, web, HttpResponse, ResponseError}, anyhow::Context, chrono::Utc, rand::{distributions::Alphanumeric, thread_rng, Rng}, secrecy::Secret, sqlx::{Executor, PgPool, Postgres, Transaction}, std::collections::HashMap, utoipa::ToSchema, uuid::Uuid
 };
 
 const TEMPLATE_ID: u64 = 3865334;
 const SIGNUP_ACTIVATION_EMAIL_SUBJECT: &str =
     "Welcome to PatternSaver.com - Please activate your account";
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, ToSchema)]
 pub struct SignupRequest {
+    #[schema(example = "user123", required = true)]
     username: String,
+    #[schema(example = "user123@mail.com", required = true)]
     email: String,
+    #[schema(example = "Password1234!", required = true)]
     password: String,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 pub struct SignupResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
@@ -49,6 +42,17 @@ pub fn parse_user(data: SignupRequest) -> Result<NewUser, String> {
     })
 }
 
+#[utoipa::path(
+    request_body = SignupRequest,
+    post,
+    path = "/auth/signup",
+    responses(
+        (status = 201, description = "Signup successfully", body = SignupResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 409, description = "Conflict"),
+        (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(
     name = "Adding new user",
     skip(request, pool, email_client, base_url),
