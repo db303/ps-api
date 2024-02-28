@@ -2,10 +2,7 @@ use {
     crate::authentication::reject_anonymous_users,
     crate::configuration::{DatabaseSettings, Settings},
     crate::email_client::EmailClient,
-    crate::routes::{
-        activate, activate_resend, change_password, create_pattern, health_check, login,
-        request_password_reset, signup,
-    },
+    crate::routes::{auth, health_check, patterns},
     crate::utils::get_error_response,
     actix_session::{storage::RedisSessionStore, SessionMiddleware},
     actix_web::{
@@ -17,6 +14,8 @@ use {
     sqlx::{postgres::PgPoolOptions, PgPool},
     std::net::TcpListener,
     tracing_actix_web::TracingLogger,
+    utoipa::OpenApi,
+    utoipa_swagger_ui::SwaggerUi,
 };
 
 pub struct Application {
@@ -90,6 +89,34 @@ async fn run(
     let secret_key = Key::from(hmac_secret.expose_secret().as_bytes());
 
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            auth::login,
+            auth::signup,
+            auth::activate,
+            auth::activate_resend,
+            auth::request_password_reset,
+            auth::change_password,
+        ),
+        components(schemas(
+            auth::SignupRequest,
+            auth::SignupResponse,
+            auth::LoginRequest,
+            auth::LoginResponse,
+            auth::SignupActivateResponse,
+            auth::ActivateResendRequest,
+            auth::ActivateResendResponse,
+            auth::PasswordResetRequest,
+            auth::PasswordResetResponse,
+            auth::ChangePasswordRequest,
+        ))
+    )]
+    struct ApiDoc;
+
+    let openapi = ApiDoc::openapi();
+
     let server = HttpServer::new(move || {
         App::new()
             .wrap(SessionMiddleware::new(
@@ -100,19 +127,25 @@ async fn run(
             .service(
                 web::scope("/app")
                     .wrap(from_fn(reject_anonymous_users))
-                    .route("/patterns", web::post().to(create_pattern)),
+                    .route("/patterns", web::post().to(patterns::create_pattern)),
             )
             .service(
                 web::scope("/auth")
-                    .route("/login", web::post().to(login))
-                    .route("/signup", web::post().to(signup))
-                    .route("/signup/activate", web::get().to(activate))
-                    .route("/signup/activate/resend", web::post().to(activate_resend))
+                    .route("/login", web::post().to(auth::login))
+                    .route("/signup", web::post().to(auth::signup))
+                    .route("/signup/activate", web::get().to(auth::activate))
+                    .route(
+                        "/signup/activate/resend",
+                        web::post().to(auth::activate_resend),
+                    )
                     .route(
                         "/change_password/request",
-                        web::post().to(request_password_reset),
+                        web::post().to(auth::request_password_reset),
                     )
-                    .route("/change_password", web::post().to(change_password)),
+                    .route("/change_password", web::post().to(auth::change_password)),
+            )
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),
             )
             .route("/health_check", web::get().to(health_check))
             .app_data(db_pool.clone())

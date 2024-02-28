@@ -5,22 +5,39 @@ use {
     anyhow::Context,
     secrecy::{ExposeSecret, Secret},
     sqlx::PgPool,
+    utoipa::ToSchema,
     uuid::Uuid,
 };
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct ChangePasswordRequest {
+    #[schema(example = "2Ig5l6jcH1aZP7Ipc30XHIMEq")]
     reset_token: String,
+    #[schema(example = "Password1234!", required = true)]
     password: Secret<String>,
+    #[schema(example = "Password1234!", required = true)]
     password_again: Secret<String>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ToSchema)]
 pub struct ChangePasswordResponse {
+    #[schema(example = "success")]
     status: String,
+    #[schema(example = "")]
     data: serde_json::Value,
 }
 
+#[utoipa::path(
+    request_body = ChangePasswordRequest,
+    post,
+    path = "/auth/change_password",
+    responses(
+        (status = 200, description = "Password changed", body = ChangePasswordResponse),
+        (status = 400, description = "Invalid input"),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(name = "Change password", skip(request, pool))]
 pub async fn change_password(
     request: web::Json<ChangePasswordRequest>,
