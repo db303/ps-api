@@ -10,5 +10,5 @@ database:
 email_client:
   base_url: "localhost"
   api_key: "eb2f873e5d21e3578ab95af78b52385f"
-  api_token: "CHANGE_ME"
+  api_token: "1470c73bc17a702016663e346b3f6d12"
 redis_uri: "redis://127.0.0.1:6379"

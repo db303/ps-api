@@ -125,11 +125,6 @@ async fn run(
             ))
             .wrap(TracingLogger::default())
             .service(
-                web::scope("/app")
-                    .wrap(from_fn(reject_anonymous_users))
-                    .route("/patterns", web::post().to(patterns::create_pattern)),
-            )
-            .service(
                 web::scope("/auth")
                     .route("/login", web::post().to(auth::login))
                     .route("/signup", web::post().to(auth::signup))
@@ -143,6 +138,13 @@ async fn run(
                         web::post().to(auth::request_password_reset),
                     )
                     .route("/change_password", web::post().to(auth::change_password)),
+            )
+            .service(
+                web::scope("/api").service(
+                    web::scope("/v1")
+                        .route("/patterns/tb303", web::post().to(patterns::create_tb303_pattern)).wrap(from_fn(reject_anonymous_users),
+                    ),
+                )
             )
             .service(
                 SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),

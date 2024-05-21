@@ -34,11 +34,15 @@ pub struct SignupActivateResponse {
         ("activation_token", description = "The activation token sent to the user's email.")
     )
 )]
+
 #[tracing::instrument(name = "Activate a pending user", skip(parameters, pool))]
 pub async fn activate(
     parameters: web::Query<Parameters>,
     pool: web::Data<PgPool>,
 ) -> Result<web::Json<SignupActivateResponse>, ActivationError> {
+
+    println!("Activation token: {}", parameters.activation_token);
+
     let user_id = get_user_id_from_token(&pool, &parameters.activation_token)
         .await
         .context("Failed to retrieve the user id associated with the provided token.")?
@@ -122,6 +126,13 @@ impl std::fmt::Debug for ActivationError {
 }
 
 impl ResponseError for ActivationError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::UnknownToken => StatusCode::UNAUTHORIZED,
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
     fn error_response(&self) -> HttpResponse {
         match self {
             Self::UnexpectedError(_) => {
@@ -130,13 +141,6 @@ impl ResponseError for ActivationError {
             Self::UnknownToken => {
                 HttpResponse::build(self.status_code()).json(get_fail_response(self.to_string()))
             }
-        }
-    }
-
-    fn status_code(&self) -> StatusCode {
-        match self {
-            Self::UnknownToken => StatusCode::UNAUTHORIZED,
-            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

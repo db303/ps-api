@@ -1,17 +1,22 @@
-mod device;
-mod new_pattern;
+mod author;
+mod knob;
 mod note;
-mod pattern_data;
-mod pattern_name;
-mod pattern_request;
 mod stem;
 mod time;
+mod new_tb303_pattern;
+mod efx_notes;
+mod accent;
+mod slide;
+mod title;
+mod waveform;
 
-pub use device::Device;
-pub use new_pattern::NewPattern;
+
+pub use author::Author;
+pub use knob::Knob;
+pub use new_tb303_pattern::NewTB303Pattern;
 pub use note::Note;
-pub use pattern_data::PatternData;
-pub use pattern_name::PatternName;
-pub use pattern_request::*;
+pub use title::Title;
 pub use stem::Stem;
 pub use time::Time;
+pub use efx_notes::EFXNotes;
+pub use waveform::Waveform;
