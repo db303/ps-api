@@ -51,15 +51,3 @@ fn get_valid_data() -> String {
     }
     "#.to_string()
 }
-
-pub struct TB303PatternRequest {
-    author: String,
-    title: String,
-    efx_notes: String,
-    waveform: String,
-    cut_off_freq: i16,
-    resonance: i16,
-    env_mod: i16,
-    decay: i16,
-    accent: i16,
-}

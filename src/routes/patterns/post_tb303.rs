@@ -5,7 +5,7 @@ use {
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
     chrono::Utc,
-    sqlx::PgPool,
+    sqlx::{Executor, PgPool, Postgres, Transaction},
     std::convert::TryInto,
     uuid::Uuid,
 };
@@ -17,13 +17,12 @@ pub struct TB303PatternRequest {
     title: String,
     efx_notes: String,
     waveform: String,
-    cut_off_freq: i16,
-    resonance: i16,
-    env_mod: i16,
-    decay: i16,
-    accent: i16,
+    cut_off_freq: i32,
+    resonance: i32,
+    env_mod: i32,
+    decay: i32,
+    accent: i32
 }
-
 
 #[derive(serde::Serialize)]
 pub struct PatternResponse {
@@ -114,25 +113,48 @@ pub async fn insert_pattern(
     new_pattern: &NewTB303Pattern,
     user_id: &Uuid,
 ) -> Result<Uuid, sqlx::Error> {
-    // let new_pattern_data = serde_json::to_value(&new_pattern.data).unwrap();
+
     let pattern_id = Uuid::new_v4();
 
-    // sqlx::query!(
-    //     r#"
-    //     INSERT INTO patterns (id, name, user_id, created_at)
-    //     VALUES ($1, $2, $3, $4, $5, $6)
-    //     "#,
-    //     pattern_id,
-    //     new_pattern.name.as_ref(),
-    //     // new_pattern.device.to_string(),
-    //     // new_pattern_data,
-    //     user_id,
-    //     Utc::now()
-    // )
-    // .execute(pool)
-    // .await?;
+    let query = sqlx::query!(
+        r#"
+        INSERT INTO patterns_tb303 (
+            pattern_id,
+            user_id,
+            author,
+            title,
+            efx_notes,
+            waveform,
+            cutoff_frequency,
+            resonance,
+            env_mod,
+            decay,
+            accent,
+            updated_at,
+            created_at )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        "#,
+        pattern_id,
+        user_id,
+        new_pattern.author.as_ref(),
+        new_pattern.title.as_ref(),
+        new_pattern.efx_notes.as_ref(),
+        new_pattern.waveform.as_ref(),
+        new_pattern.cut_off_freq.as_ref(),
+        new_pattern.resonance.as_ref(),
+        new_pattern.env_mod.as_ref(),
+        new_pattern.decay.as_ref(),
+        new_pattern.accent.as_ref(),
+        Utc::now(),
+        Utc::now()
+    );
+
+    query.execute(pool).await?;
+
     Ok(pattern_id)
 }
+
+
 
 impl std::fmt::Debug for CreatePatternError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

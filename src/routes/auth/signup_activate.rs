@@ -41,8 +41,6 @@ pub async fn activate(
     pool: web::Data<PgPool>,
 ) -> Result<web::Json<SignupActivateResponse>, ActivationError> {
 
-    println!("Activation token: {}", parameters.activation_token);
-
     let user_id = get_user_id_from_token(&pool, &parameters.activation_token)
         .await
         .context("Failed to retrieve the user id associated with the provided token.")?
