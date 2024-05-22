@@ -6,8 +6,9 @@ pub struct Author(String);
 impl Author {
     pub fn parse(s: String) -> Result<Author, String> {
         let is_too_long = s.graphemes(true).count() > 50;
+        let is_empty = s.trim().is_empty();
 
-        if is_too_long {
+        if is_too_long || is_empty {
             Err(format!("{} is not a valid author.", s))
         } else {
             Ok(Self(s))
@@ -25,6 +26,19 @@ impl AsRef<str> for Author {
 mod tests {
     use crate::domain::Author;
     use claims::{assert_err, assert_ok};
+
+    #[test]
+    fn an_empty_author_is_rejected() {
+        let author = "".to_string();
+        assert_err!(Author::parse(author));
+    }
+
+    #[test]
+    fn an_author_with_only_whitespace_is_rejected() {
+        let author = " ".to_string();
+        assert_err!(Author::parse(author));
+    }
+
     #[test]
     fn a_50_grapheme_long_author_is_valid() {
         let author = "a".repeat(50);

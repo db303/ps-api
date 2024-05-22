@@ -10,18 +10,17 @@ use {
     uuid::Uuid,
 };
 
-
 #[derive(serde::Deserialize, Debug)]
 pub struct TB303PatternRequest {
-    author: String,
+    author: Option<String>,
     title: String,
-    efx_notes: String,
-    waveform: String,
-    cut_off_freq: i32,
-    resonance: i32,
-    env_mod: i32,
-    decay: i32,
-    accent: i32
+    efx_notes: Option<String>,
+    waveform: Option<String>,
+    cut_off_freq: Option<i32>,
+    resonance: Option<i32>,
+    env_mod: Option<i32>,
+    decay: Option<i32>,
+    accent: Option<i32>
 }
 
 #[derive(serde::Serialize)]
@@ -45,15 +44,16 @@ impl TryInto<NewTB303Pattern> for TB303PatternRequest {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
-        let author = Author::parse(self.author)?;
-        let title = Title::parse(self.title)?;
-        let efx_notes = EFXNotes::parse(self.efx_notes)?;
-        let cut_off_freq = Knob::parse(self.cut_off_freq)?;
-        let resonance = Knob::parse(self.resonance)?;
-        let env_mod = Knob::parse(self.env_mod)?;
-        let decay = Knob::parse(self.decay)?;
-        let accent = Knob::parse(self.accent)?;
-        let waveform = Waveform::parse(self.waveform)?;
+        let author = self.author.map(|author| Author::parse(author)).transpose()?;
+        let title = Title::parse(self.title).map_err(|e| e.to_string())?;
+        let efx_notes = self.efx_notes.map(|efx_notes| EFXNotes::parse(efx_notes)).transpose()?;
+        let cut_off_freq = self.cut_off_freq.map(|cut_off_freq| Knob::parse(cut_off_freq)).transpose()?;
+        let resonance = self.resonance.map(|resonance| Knob::parse(resonance)).transpose()?;
+        let env_mod = self.env_mod.map(|env_mod| Knob::parse(env_mod)).transpose()?;
+        let decay = self.decay.map(|decay| Knob::parse(decay)).transpose()?;
+        let accent = self.accent.map(|accent| Knob::parse(accent)).transpose()?;
+        let waveform = self.waveform.map(|waveform| Waveform::parse(waveform)).transpose()?;
+
 
         Ok(NewTB303Pattern {
             author,
@@ -80,10 +80,6 @@ pub enum CreatePatternError {
 #[tracing::instrument(
     name = "Adding new pattern",
     skip(pattern, pool),
-    fields(
-        pattern_name = %pattern.author,
-        pattern_title = %pattern.title,
-    )
 )]
 pub async fn create_tb303_pattern(
     pattern: web::Json<TB303PatternRequest>,
@@ -91,12 +87,21 @@ pub async fn create_tb303_pattern(
     user_id: web::ReqData<UserId>,
 ) -> Result<web::Json<PatternResponse>, CreatePatternError> {
     let user_id = user_id.into_inner();
-
     let new_pattern = pattern.0.try_into().map_err(CreatePatternError::ValidationError)?;
 
-    let pattern_id = insert_pattern(&pool, &new_pattern, &user_id)
+    let mut transaction = pool
+        .begin()
+        .await
+        .context("Failed to start a new transaction.")?;
+
+    let pattern_id = insert_pattern(&mut transaction, &new_pattern, &user_id)
         .await
         .context("Failed to insert new pattern in the database.")?;
+
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit the transaction to save tb303 pattern.")?;
 
     Ok(web::Json(PatternResponse {
         status: "success".to_string(),
@@ -105,11 +110,11 @@ pub async fn create_tb303_pattern(
 }
 
 #[tracing::instrument(
-    name = "Saving new pattern details in the database",
-    skip(new_pattern, pool)
+    name = "Saving new tb303 pattern in the database",
+    skip(new_pattern, transaction, user_id),
 )]
 pub async fn insert_pattern(
-    pool: &PgPool,
+    transaction: &mut Transaction<'_, Postgres>,
     new_pattern: &NewTB303Pattern,
     user_id: &Uuid,
 ) -> Result<Uuid, sqlx::Error> {
@@ -136,24 +141,23 @@ pub async fn insert_pattern(
         "#,
         pattern_id,
         user_id,
-        new_pattern.author.as_ref(),
+        new_pattern.author.as_ref().map(|a| a.as_ref()),
         new_pattern.title.as_ref(),
-        new_pattern.efx_notes.as_ref(),
-        new_pattern.waveform.as_ref(),
-        new_pattern.cut_off_freq.as_ref(),
-        new_pattern.resonance.as_ref(),
-        new_pattern.env_mod.as_ref(),
-        new_pattern.decay.as_ref(),
-        new_pattern.accent.as_ref(),
+        new_pattern.efx_notes.as_ref().map(|e| e.as_ref()),
+        new_pattern.waveform.as_ref().map(|w| w.as_ref()),
+        new_pattern.cut_off_freq.as_ref().map(|c| c.as_ref()).unwrap_or(&0),
+        new_pattern.resonance.as_ref().map(|r| r.as_ref()).unwrap_or(&0),
+        new_pattern.env_mod.as_ref().map(|e| e.as_ref()).unwrap_or(&0),
+        new_pattern.decay.as_ref().map(|d| d.as_ref()).unwrap_or(&0),
+        new_pattern.accent.as_ref().map(|a| a.as_ref()).unwrap_or(&0),
         Utc::now(),
         Utc::now()
     );
 
-    query.execute(pool).await?;
+    transaction.execute(query).await?;
 
     Ok(pattern_id)
 }
-
 
 
 impl std::fmt::Debug for CreatePatternError {

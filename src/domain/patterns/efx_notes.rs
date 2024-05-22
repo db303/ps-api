@@ -6,8 +6,9 @@ pub struct EFXNotes(String);
 impl EFXNotes {
     pub fn parse(s: String) -> Result<EFXNotes, String> {
         let is_too_long = s.graphemes(true).count() > 500;
+        let is_empty = s.trim().is_empty();
 
-        if is_too_long {
+        if is_too_long || is_empty {
             Err(format!("{} is not a valid efx / notes.", s))
         } else {
             Ok(Self(s))

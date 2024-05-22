@@ -6,8 +6,9 @@ pub struct Title(String);
 impl Title {
     pub fn parse(s: String) -> Result<Title, String> {
         let is_too_long = s.graphemes(true).count() > 100;
+        let is_empty = s.trim().is_empty();
 
-        if is_too_long {
+        if is_too_long || is_empty {
             Err(format!("{} is not a valid pattern title.", s))
         } else {
             Ok(Self(s))
