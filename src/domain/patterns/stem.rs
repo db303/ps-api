@@ -15,6 +15,7 @@ impl Stem {
         }
     }
 }
+
 impl AsRef<str> for Stem {
     fn as_ref(&self) -> &str {
         &self.0
@@ -26,10 +27,6 @@ mod tests {
     use crate::domain::Stem;
     use claims::{assert_err, assert_ok};
 
-    fn valid_stem_values() -> Vec<String> {
-        vec!["up".to_string(), "down".to_string(), "none".to_string()]
-    }
-
     #[test]
     fn invalid_stem_is_rejected() {
         let stem = "invalid_stem".to_string();
@@ -38,8 +35,8 @@ mod tests {
 
     #[test]
     fn valid_stems_are_accepted() {
-        for stem in valid_stem_values() {
-            assert_ok!(Stem::parse(stem));
+        for stem in vec!["up", "down", "none"] {
+            assert_ok!(Stem::parse(stem.to_string()));
         }
     }
 }

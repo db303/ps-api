@@ -31,6 +31,8 @@ pub struct StepTB303 {
     pub note: String,
     pub stem: String,
     pub time: String,
+    pub accent: bool,
+    pub slide: bool,
 }
 
 #[derive(serde::Serialize)]
@@ -71,10 +73,22 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
                 let note = Note::parse(step.note.clone()).map_err(|e| e.to_string())?;
                 let stem = Stem::parse(step.stem.clone()).map_err(|e| e.to_string())?;
                 let time = Time::parse(step.time.clone()).map_err(|e| e.to_string())?;
+                let accent = step.accent;
+                let slide = step.slide;
 
-                Ok(NewTB303Step { note, stem, time })
+                Ok(NewTB303Step {
+                    note,
+                    stem,
+                    time,
+                    accent,
+                    slide,
+                })
             })
             .collect::<Result<Vec<NewTB303Step>, String>>()?;
+
+        if steps.len() > 16 {
+            return Err("A pattern can only have up to 16 steps.".to_string());
+        }
 
         Ok(NewTB303Pattern {
             author,

@@ -15,6 +15,7 @@ impl Time {
         }
     }
 }
+
 impl AsRef<str> for Time {
     fn as_ref(&self) -> &str {
         &self.0
@@ -26,10 +27,6 @@ mod tests {
     use crate::domain::Time;
     use claims::{assert_err, assert_ok};
 
-    fn valid_time_values() -> Vec<String> {
-        vec!["note".to_string(), "tied".to_string(), "rest".to_string()]
-    }
-
     #[test]
     fn invalid_time_is_rejected() {
         let time = "invalid_time".to_string();
@@ -38,8 +35,8 @@ mod tests {
 
     #[test]
     fn valid_times_are_accepted() {
-        for time in valid_time_values() {
-            assert_ok!(Time::parse(time));
+        for time in vec!["note", "tied", "rest"] {
+            assert_ok!(Time::parse(time.to_string()));
         }
     }
 }
