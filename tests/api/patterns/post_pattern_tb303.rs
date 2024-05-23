@@ -2,7 +2,7 @@ use serde_json::Value;
 use crate::helpers::spawn_app;
 
 #[tokio::test]
-async fn it_returns_401_for_unauthorized_requests() {
+async fn post_pattern_tb303_returns_401_for_unauthorized_requests() {
     // Arrange
     let app = spawn_app().await;
     let body = get_valid_data();
@@ -15,7 +15,7 @@ async fn it_returns_401_for_unauthorized_requests() {
 }
 
 #[tokio::test]
-async fn it_returns_400_when_required_fields_are_missing() {
+async fn post_pattern_tb303_returns_400_when_required_fields_are_missing() {
     // Arrange
     let app = spawn_app().await;
     let valid_data = get_valid_data();
@@ -52,7 +52,7 @@ async fn it_returns_400_when_required_fields_are_missing() {
 }
 
 #[tokio::test]
-async fn it_returns_400_when_text_fields_are_present_but_invalid() {
+async fn post_pattern_tb303_returns_400_when_text_fields_are_present_but_invalid() {
     // Arrange
     let app = spawn_app().await;
     let valid_data = get_valid_data();
@@ -95,7 +95,7 @@ async fn it_returns_400_when_text_fields_are_present_but_invalid() {
 }
 
 #[tokio::test]
-async fn it_returns_400_when_numeric_fields_are_out_of_bounds() {
+async fn post_pattern_tb303_returns_400_when_numeric_fields_are_out_of_bounds() {
     // Arrange
     let app = spawn_app().await;
     let valid_data = get_valid_data();
@@ -141,7 +141,7 @@ async fn it_returns_400_when_numeric_fields_are_out_of_bounds() {
 }
 
 #[tokio::test]
-async fn it_returns_200_for_authorized_requests() {
+async fn post_pattern_tb303_persists_the_new_pattern_tb303() {
     // Arrange
     let app = spawn_app().await;
     let body = get_valid_data();
@@ -161,21 +161,63 @@ async fn it_returns_200_for_authorized_requests() {
 
     // Assert
     assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!(
+        "SELECT author, title, efx_notes, waveform, cutoff_frequency, resonance, env_mod, decay, accent FROM patterns_tb303")
+        .fetch_one(&app.db_pool)
+        .await
+        .expect("Failed to fetch saved pattern");
+
+    assert_eq!(saved.author, Some("Author 1".to_string()));
+    assert_eq!(saved.title, Some("My first pattern".to_string()));
+    assert_eq!(saved.efx_notes, Some("Some notes".to_string()));
+    assert_eq!(saved.waveform, Some("sawtooth".to_string()));
+    assert_eq!(saved.cutoff_frequency, Some(10));
+    assert_eq!(saved.resonance, Some(20));
+    assert_eq!(saved.env_mod, Some(30));
+    assert_eq!(saved.decay, Some(40));
+    assert_eq!(saved.accent, Some(50));
 }
+#[tokio::test]
+async fn post_pattern_tb303_fails_if_there_is_a_fatal_database_error() {
+    // Arrange
+    let app = spawn_app().await;
+    let body = get_valid_data();
 
+    // Act - Part 1 - Login
+    app.post_login(
+        serde_json::json!({
+            "username": &app.test_user.username,
+            "password": &app.test_user.password
+        })
+        .to_string(),
+    )
+    .await;
 
+    // Destroy the  database
+    sqlx::query!("ALTER TABLE patterns_tb303 DROP COLUMN title;",)
+        .execute(&app.db_pool)
+        .await
+        .unwrap();
+
+    // Act - Part 2 - Create pattern
+    let response = app.post_patterns_tb303(body.into()).await;
+
+    // Assert
+    assert_eq!(500, response.status().as_u16());
+}
 
 fn get_valid_data() -> String {
     r#"{
-        "author": "Pattern 1",
+        "author": "Author 1",
         "title": "My first pattern",
         "efx_notes": "Some notes",
         "waveform": "sawtooth",
-        "cut_off_freq": 100,
-        "resonance": 100,
-        "env_mod": 100,
-        "decay": 100,
-        "accent": 100
+        "cut_off_freq": 10,
+        "resonance": 20,
+        "env_mod": 30,
+        "decay": 40,
+        "accent": 50
     }
     "#.to_string()
 }

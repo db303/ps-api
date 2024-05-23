@@ -1,6 +1,8 @@
 use {
     crate::authentication::UserId,
-    crate::domain::{NewTB303Pattern, Author, EFXNotes, Knob, Title, Waveform},
+    crate::domain::{
+        NewTB303Pattern, Author, EFXNotes, Knob, Title, Waveform
+    },
     crate::utils::error_chain_fmt,
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
@@ -10,8 +12,9 @@ use {
     uuid::Uuid,
 };
 
+
 #[derive(serde::Deserialize, Debug)]
-pub struct TB303PatternRequest {
+pub struct PatternTB303Request {
     author: Option<String>,
     title: String,
     efx_notes: Option<String>,
@@ -20,7 +23,18 @@ pub struct TB303PatternRequest {
     resonance: Option<i32>,
     env_mod: Option<i32>,
     decay: Option<i32>,
-    accent: Option<i32>
+    accent: Option<i32>,
+    // steps: Vec<StepTB303>
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct StepTB303 {
+    pub step: i32,
+    pub note: String,
+    pub accent: bool,
+    pub slide: bool,
+    pub stem: String,
+    pub time: String
 }
 
 #[derive(serde::Serialize)]
@@ -40,7 +54,7 @@ pub struct PatternErrorResponse {
     message: String,
 }
 
-impl TryInto<NewTB303Pattern> for TB303PatternRequest {
+impl TryInto<NewTB303Pattern> for PatternTB303Request {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
@@ -82,7 +96,7 @@ pub enum CreatePatternError {
     skip(pattern, pool),
 )]
 pub async fn create_tb303_pattern(
-    pattern: web::Json<TB303PatternRequest>,
+    pattern: web::Json<PatternTB303Request>,
     pool: web::Data<PgPool>,
     user_id: web::ReqData<UserId>,
 ) -> Result<web::Json<PatternResponse>, CreatePatternError> {
