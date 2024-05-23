@@ -1,11 +1,9 @@
-mod accent;
 mod author;
 mod efx_notes;
 mod knob;
 mod new_tb303_pattern;
 mod new_tb303_step;
 mod note;
-mod slide;
 mod stem;
 mod time;
 mod title;
