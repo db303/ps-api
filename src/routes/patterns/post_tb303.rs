@@ -1,8 +1,6 @@
 use {
     crate::authentication::UserId,
-    crate::domain::{
-        NewTB303Pattern, Author, EFXNotes, Knob, Title, Waveform
-    },
+    crate::domain::{Author, EFXNotes, Knob, NewTB303Pattern, Title, Waveform},
     crate::utils::error_chain_fmt,
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
@@ -11,7 +9,6 @@ use {
     std::convert::TryInto,
     uuid::Uuid,
 };
-
 
 #[derive(serde::Deserialize, Debug)]
 pub struct PatternTB303Request {
@@ -34,7 +31,7 @@ pub struct StepTB303 {
     pub accent: bool,
     pub slide: bool,
     pub stem: String,
-    pub time: String
+    pub time: String,
 }
 
 #[derive(serde::Serialize)]
@@ -58,16 +55,33 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
-        let author = self.author.map(|author| Author::parse(author)).transpose()?;
+        let author = self
+            .author
+            .map(|author| Author::parse(author))
+            .transpose()?;
         let title = Title::parse(self.title).map_err(|e| e.to_string())?;
-        let efx_notes = self.efx_notes.map(|efx_notes| EFXNotes::parse(efx_notes)).transpose()?;
-        let cut_off_freq = self.cut_off_freq.map(|cut_off_freq| Knob::parse(cut_off_freq)).transpose()?;
-        let resonance = self.resonance.map(|resonance| Knob::parse(resonance)).transpose()?;
-        let env_mod = self.env_mod.map(|env_mod| Knob::parse(env_mod)).transpose()?;
+        let efx_notes = self
+            .efx_notes
+            .map(|efx_notes| EFXNotes::parse(efx_notes))
+            .transpose()?;
+        let cut_off_freq = self
+            .cut_off_freq
+            .map(|cut_off_freq| Knob::parse(cut_off_freq))
+            .transpose()?;
+        let resonance = self
+            .resonance
+            .map(|resonance| Knob::parse(resonance))
+            .transpose()?;
+        let env_mod = self
+            .env_mod
+            .map(|env_mod| Knob::parse(env_mod))
+            .transpose()?;
         let decay = self.decay.map(|decay| Knob::parse(decay)).transpose()?;
         let accent = self.accent.map(|accent| Knob::parse(accent)).transpose()?;
-        let waveform = self.waveform.map(|waveform| Waveform::parse(waveform)).transpose()?;
-
+        let waveform = self
+            .waveform
+            .map(|waveform| Waveform::parse(waveform))
+            .transpose()?;
 
         Ok(NewTB303Pattern {
             author,
@@ -78,7 +92,7 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
             resonance,
             env_mod,
             decay,
-            accent
+            accent,
         })
     }
 }
@@ -91,17 +105,17 @@ pub enum CreatePatternError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-#[tracing::instrument(
-    name = "Adding new pattern",
-    skip(pattern, pool),
-)]
+#[tracing::instrument(name = "Adding new pattern", skip(pattern, pool))]
 pub async fn create_tb303_pattern(
     pattern: web::Json<PatternTB303Request>,
     pool: web::Data<PgPool>,
     user_id: web::ReqData<UserId>,
 ) -> Result<web::Json<PatternResponse>, CreatePatternError> {
     let user_id = user_id.into_inner();
-    let new_pattern = pattern.0.try_into().map_err(CreatePatternError::ValidationError)?;
+    let new_pattern = pattern
+        .0
+        .try_into()
+        .map_err(CreatePatternError::ValidationError)?;
 
     let mut transaction = pool
         .begin()
@@ -125,14 +139,13 @@ pub async fn create_tb303_pattern(
 
 #[tracing::instrument(
     name = "Saving new tb303 pattern in the database",
-    skip(new_pattern, transaction, user_id),
+    skip(new_pattern, transaction, user_id)
 )]
 pub async fn insert_pattern(
     transaction: &mut Transaction<'_, Postgres>,
     new_pattern: &NewTB303Pattern,
     user_id: &Uuid,
 ) -> Result<Uuid, sqlx::Error> {
-
     let pattern_id = Uuid::new_v4();
 
     let query = sqlx::query!(
@@ -159,11 +172,27 @@ pub async fn insert_pattern(
         new_pattern.title.as_ref(),
         new_pattern.efx_notes.as_ref().map(|e| e.as_ref()),
         new_pattern.waveform.as_ref().map(|w| w.as_ref()),
-        new_pattern.cut_off_freq.as_ref().map(|c| c.as_ref()).unwrap_or(&0),
-        new_pattern.resonance.as_ref().map(|r| r.as_ref()).unwrap_or(&0),
-        new_pattern.env_mod.as_ref().map(|e| e.as_ref()).unwrap_or(&0),
+        new_pattern
+            .cut_off_freq
+            .as_ref()
+            .map(|c| c.as_ref())
+            .unwrap_or(&0),
+        new_pattern
+            .resonance
+            .as_ref()
+            .map(|r| r.as_ref())
+            .unwrap_or(&0),
+        new_pattern
+            .env_mod
+            .as_ref()
+            .map(|e| e.as_ref())
+            .unwrap_or(&0),
         new_pattern.decay.as_ref().map(|d| d.as_ref()).unwrap_or(&0),
-        new_pattern.accent.as_ref().map(|a| a.as_ref()).unwrap_or(&0),
+        new_pattern
+            .accent
+            .as_ref()
+            .map(|a| a.as_ref())
+            .unwrap_or(&0),
         Utc::now(),
         Utc::now()
     );
@@ -172,7 +201,6 @@ pub async fn insert_pattern(
 
     Ok(pattern_id)
 }
-
 
 impl std::fmt::Debug for CreatePatternError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

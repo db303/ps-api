@@ -34,13 +34,11 @@ pub struct SignupActivateResponse {
         ("activation_token", description = "The activation token sent to the user's email.")
     )
 )]
-
 #[tracing::instrument(name = "Activate a pending user", skip(parameters, pool))]
 pub async fn activate(
     parameters: web::Query<Parameters>,
     pool: web::Data<PgPool>,
 ) -> Result<web::Json<SignupActivateResponse>, ActivationError> {
-
     let user_id = get_user_id_from_token(&pool, &parameters.activation_token)
         .await
         .context("Failed to retrieve the user id associated with the provided token.")?

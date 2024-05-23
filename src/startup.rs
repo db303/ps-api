@@ -142,9 +142,12 @@ async fn run(
             .service(
                 web::scope("/api").service(
                     web::scope("/v1")
-                        .route("/patterns/tb303", web::post().to(patterns::create_tb303_pattern)).wrap(from_fn(reject_anonymous_users),
-                    ),
-                )
+                        .route(
+                            "/patterns/tb303",
+                            web::post().to(patterns::create_tb303_pattern),
+                        )
+                        .wrap(from_fn(reject_anonymous_users)),
+                ),
             )
             .service(
                 SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),

@@ -3,12 +3,14 @@ pub struct Waveform(String);
 
 impl Waveform {
     pub fn parse(s: String) -> Result<Waveform, String> {
-
         let is_not_sawtooth = s != "sawtooth";
         let is_not_square = s != "square";
 
         if is_not_sawtooth && is_not_square {
-            Err(format!("{} is not a valid waveform. Can only be 'sawtooth' or 'square'", s))
+            Err(format!(
+                "{} is not a valid waveform. Can only be 'sawtooth' or 'square'",
+                s
+            ))
         } else {
             Ok(Self(s))
         }

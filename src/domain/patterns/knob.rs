@@ -3,7 +3,6 @@ pub struct Knob(i32);
 
 impl Knob {
     pub fn parse(i: i32) -> Result<Knob, String> {
-
         let is_less_than_0 = i < 0;
         let is_greater_than_360 = i > 360;
 

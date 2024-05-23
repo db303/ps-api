@@ -1,5 +1,5 @@
-use serde_json::Value;
 use crate::helpers::spawn_app;
+use serde_json::Value;
 
 #[tokio::test]
 async fn post_pattern_tb303_returns_401_for_unauthorized_requests() {
@@ -20,17 +20,17 @@ async fn post_pattern_tb303_returns_400_when_required_fields_are_missing() {
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let fields_to_remove = vec![
-        "title",
-    ];
+    let fields_to_remove = vec!["title"];
 
     // Act - Part 1 - Login
     app.post_login(
         serde_json::json!({
             "username": &app.test_user.username,
             "password": &app.test_user.password
-        }).to_string(),
-    ).await;
+        })
+        .to_string(),
+    )
+    .await;
 
     for field in fields_to_remove {
         let mut data: Value = serde_json::from_str(&valid_data).unwrap();
@@ -61,7 +61,7 @@ async fn post_pattern_tb303_returns_400_when_text_fields_are_present_but_invalid
         ("author", vec!["", " "]),
         ("title", vec!["", " "]),
         ("efx_notes", vec!["", " "]),
-        ("waveform", vec!["", "unknown_waveform", "123"]) // Examples of invalid waveform values
+        ("waveform", vec!["", "unknown_waveform", "123"]), // Examples of invalid waveform values
     ];
 
     // Act - Part 1 - Login
@@ -69,13 +69,17 @@ async fn post_pattern_tb303_returns_400_when_text_fields_are_present_but_invalid
         serde_json::json!({
             "username": &app.test_user.username,
             "password": &app.test_user.password
-        }).to_string(),
-    ).await;
+        })
+        .to_string(),
+    )
+    .await;
 
     for (field, invalid_values) in invalid_values {
         for invalid_value in invalid_values {
             let mut data: Value = serde_json::from_str(&valid_data).unwrap();
-            data.as_object_mut().unwrap().insert(field.to_string(), serde_json::json!(invalid_value));
+            data.as_object_mut()
+                .unwrap()
+                .insert(field.to_string(), serde_json::json!(invalid_value));
 
             let body = serde_json::to_string(&data).unwrap();
 
@@ -100,13 +104,7 @@ async fn post_pattern_tb303_returns_400_when_numeric_fields_are_out_of_bounds() 
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let numeric_fields = vec![
-        "cut_off_freq",
-        "resonance",
-        "env_mod",
-        "decay",
-        "accent"
-    ];
+    let numeric_fields = vec!["cut_off_freq", "resonance", "env_mod", "decay", "accent"];
 
     let invalid_values = vec![-1, 361]; // Values outside the range 0-360
 
@@ -115,13 +113,17 @@ async fn post_pattern_tb303_returns_400_when_numeric_fields_are_out_of_bounds() 
         serde_json::json!({
             "username": &app.test_user.username,
             "password": &app.test_user.password
-        }).to_string(),
-    ).await;
+        })
+        .to_string(),
+    )
+    .await;
 
     for field in numeric_fields {
         for invalid_value in &invalid_values {
             let mut data: Value = serde_json::from_str(&valid_data).unwrap();
-            data.as_object_mut().unwrap().insert(field.to_string(), serde_json::json!(invalid_value));
+            data.as_object_mut()
+                .unwrap()
+                .insert(field.to_string(), serde_json::json!(invalid_value));
 
             let body = serde_json::to_string(&data).unwrap();
 
@@ -219,5 +221,6 @@ fn get_valid_data() -> String {
         "decay": 40,
         "accent": 50
     }
-    "#.to_string()
+    "#
+    .to_string()
 }

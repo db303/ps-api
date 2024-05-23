@@ -11,4 +11,3 @@ pub struct NewTB303Pattern {
     pub decay: Option<Knob>,
     pub accent: Option<Knob>,
 }
-
