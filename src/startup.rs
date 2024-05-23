@@ -167,12 +167,6 @@ async fn run(
 #[derive(Clone)]
 pub struct HmacSecret(pub String);
 
-#[derive(serde::Serialize)]
-struct ErrorResponse {
-    status: String,
-    message: String,
-}
-
 pub struct ApiError;
 
 impl ApiError {
