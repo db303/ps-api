@@ -210,12 +210,16 @@ async fn post_pattern_tb303_fails_if_there_is_a_fatal_database_error() {
 }
 
 #[tokio::test]
-async fn post_pattern_tb303_returns_400_when_note_value_is_invalid() {
+async fn post_pattern_tb303_returns_400_when_field_value_is_invalid() {
     // Arrange
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let invalid_values = vec!["", " ", "invalid_note"];
+    let fields_and_invalid_values = vec![
+        ("note", vec!["", " ", "invalid_note"]),
+        ("stem", vec!["", " ", "invalid_stem"]),
+        ("time", vec!["", " ", "invalid_time"]),
+    ];
 
     // Act - Part 1 - Login
     app.post_login(
@@ -227,22 +231,25 @@ async fn post_pattern_tb303_returns_400_when_note_value_is_invalid() {
     )
     .await;
 
-    for invalid_value in invalid_values {
-        let mut data: Value = serde_json::from_str(&valid_data).unwrap();
-        data["steps"][0]["note"] = serde_json::json!(invalid_value);
+    for (field, invalid_values) in fields_and_invalid_values {
+        for invalid_value in invalid_values {
+            let mut data: Value = serde_json::from_str(&valid_data).unwrap();
+            data["steps"][0][field] = serde_json::json!(invalid_value);
 
-        let body = serde_json::to_string(&data).unwrap();
+            let body = serde_json::to_string(&data).unwrap();
 
-        // Act - Part 2 - Create pattern
-        let response = app.post_patterns_tb303(body.into()).await;
+            // Act - Part 2 - Create pattern
+            let response = app.post_patterns_tb303(body.into()).await;
 
-        // Assert
-        assert_eq!(
-            400,
-            response.status().as_u16(),
-            "The API did not return a 400 Bad Request when the note field was invalid: {}",
-            invalid_value
-        );
+            // Assert
+            assert_eq!(
+                400,
+                response.status().as_u16(),
+                "The API did not return a 400 Bad Request when the {} field was invalid: {}",
+                field,
+                invalid_value
+            );
+        }
     }
 }
 
@@ -259,7 +266,9 @@ fn get_valid_data() -> String {
         "accent": 50,
         "steps": [
             {
-                "note": "C"
+                "note": "C",
+                "stem": "up",
+                "time": "note"
             }
         ]
 

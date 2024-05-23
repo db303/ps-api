@@ -1,6 +1,8 @@
 use {
     crate::authentication::UserId,
-    crate::domain::{Author, EFXNotes, Knob, NewTB303Pattern, NewTB303Step, Note, Title, Waveform},
+    crate::domain::{
+        Author, EFXNotes, Knob, NewTB303Pattern, NewTB303Step, Note, Stem, Time, Title, Waveform,
+    },
     crate::utils::error_chain_fmt,
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
@@ -27,6 +29,8 @@ pub struct PatternTB303Request {
 #[derive(serde::Deserialize, Debug)]
 pub struct StepTB303 {
     pub note: String,
+    pub stem: String,
+    pub time: String,
 }
 
 #[derive(serde::Serialize)]
@@ -65,8 +69,10 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
             .iter()
             .map(|step| {
                 let note = Note::parse(step.note.clone()).map_err(|e| e.to_string())?;
+                let stem = Stem::parse(step.stem.clone()).map_err(|e| e.to_string())?;
+                let time = Time::parse(step.time.clone()).map_err(|e| e.to_string())?;
 
-                Ok(NewTB303Step { note })
+                Ok(NewTB303Step { note, stem, time })
             })
             .collect::<Result<Vec<NewTB303Step>, String>>()?;
 
