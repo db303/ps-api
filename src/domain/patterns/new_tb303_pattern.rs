@@ -1,4 +1,4 @@
-use crate::domain::{Author, EFXNotes, Knob, Title, Waveform};
+use crate::domain::{Author, EFXNotes, Knob, NewTB303Step, Title, Waveform};
 
 pub struct NewTB303Pattern {
     pub author: Option<Author>,
@@ -10,4 +10,5 @@ pub struct NewTB303Pattern {
     pub env_mod: Option<Knob>,
     pub decay: Option<Knob>,
     pub accent: Option<Knob>,
+    pub steps: Vec<NewTB303Step>,
 }

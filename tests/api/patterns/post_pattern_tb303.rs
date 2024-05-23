@@ -209,6 +209,43 @@ async fn post_pattern_tb303_fails_if_there_is_a_fatal_database_error() {
     assert_eq!(500, response.status().as_u16());
 }
 
+#[tokio::test]
+async fn post_pattern_tb303_returns_400_when_note_value_is_invalid() {
+    // Arrange
+    let app = spawn_app().await;
+    let valid_data = get_valid_data();
+
+    let invalid_values = vec!["", " ", "invalid_note"];
+
+    // Act - Part 1 - Login
+    app.post_login(
+        serde_json::json!({
+            "username": &app.test_user.username,
+            "password": &app.test_user.password
+        })
+        .to_string(),
+    )
+    .await;
+
+    for invalid_value in invalid_values {
+        let mut data: Value = serde_json::from_str(&valid_data).unwrap();
+        data["steps"][0]["note"] = serde_json::json!(invalid_value);
+
+        let body = serde_json::to_string(&data).unwrap();
+
+        // Act - Part 2 - Create pattern
+        let response = app.post_patterns_tb303(body.into()).await;
+
+        // Assert
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "The API did not return a 400 Bad Request when the note field was invalid: {}",
+            invalid_value
+        );
+    }
+}
+
 fn get_valid_data() -> String {
     r#"{
         "author": "Author 1",
@@ -220,7 +257,11 @@ fn get_valid_data() -> String {
         "env_mod": 30,
         "decay": 40,
         "accent": 50,
-        "steps": []
+        "steps": [
+            {
+                "note": "C"
+            }
+        ]
 
     }
     "#

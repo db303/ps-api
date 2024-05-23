@@ -1,6 +1,6 @@
 use {
     crate::authentication::UserId,
-    crate::domain::{Author, EFXNotes, Knob, NewTB303Pattern, Title, Waveform},
+    crate::domain::{Author, EFXNotes, Knob, NewTB303Pattern, NewTB303Step, Note, Title, Waveform},
     crate::utils::error_chain_fmt,
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
@@ -21,17 +21,12 @@ pub struct PatternTB303Request {
     env_mod: Option<i32>,
     decay: Option<i32>,
     accent: Option<i32>,
-    steps: Vec<StepTB303>
+    steps: Vec<StepTB303>,
 }
 
 #[derive(serde::Deserialize, Debug)]
 pub struct StepTB303 {
-    pub step: i32,
     pub note: String,
-    pub accent: bool,
-    pub slide: bool,
-    pub stem: String,
-    pub time: String,
 }
 
 #[derive(serde::Serialize)]
@@ -64,6 +59,17 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
         let decay = self.decay.map(Knob::parse).transpose()?;
         let accent = self.accent.map(Knob::parse).transpose()?;
         let waveform = self.waveform.map(Waveform::parse).transpose()?;
+
+        let steps = self
+            .steps
+            .iter()
+            .map(|step| {
+                let note = Note::parse(step.note.clone()).map_err(|e| e.to_string())?;
+
+                Ok(NewTB303Step { note })
+            })
+            .collect::<Result<Vec<NewTB303Step>, String>>()?;
+
         Ok(NewTB303Pattern {
             author,
             title,
@@ -74,6 +80,7 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
             env_mod,
             decay,
             accent,
+            steps,
         })
     }
 }
