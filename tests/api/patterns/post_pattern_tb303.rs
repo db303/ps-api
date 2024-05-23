@@ -20,7 +20,7 @@ async fn post_pattern_tb303_returns_400_when_required_fields_are_missing() {
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let fields_to_remove = vec!["title"];
+    let fields_to_remove = vec!["title", "steps"];
 
     // Act - Part 1 - Login
     app.post_login(
@@ -219,7 +219,9 @@ fn get_valid_data() -> String {
         "resonance": 20,
         "env_mod": 30,
         "decay": 40,
-        "accent": 50
+        "accent": 50,
+        "steps": []
+
     }
     "#
     .to_string()

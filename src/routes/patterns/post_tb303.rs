@@ -21,7 +21,7 @@ pub struct PatternTB303Request {
     env_mod: Option<i32>,
     decay: Option<i32>,
     accent: Option<i32>,
-    // steps: Vec<StepTB303>
+    steps: Vec<StepTB303>
 }
 
 #[derive(serde::Deserialize, Debug)]
