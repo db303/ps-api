@@ -55,34 +55,15 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
-        let author = self
-            .author
-            .map(|author| Author::parse(author))
-            .transpose()?;
+        let author = self.author.map(Author::parse).transpose()?;
         let title = Title::parse(self.title).map_err(|e| e.to_string())?;
-        let efx_notes = self
-            .efx_notes
-            .map(|efx_notes| EFXNotes::parse(efx_notes))
-            .transpose()?;
-        let cut_off_freq = self
-            .cut_off_freq
-            .map(|cut_off_freq| Knob::parse(cut_off_freq))
-            .transpose()?;
-        let resonance = self
-            .resonance
-            .map(|resonance| Knob::parse(resonance))
-            .transpose()?;
-        let env_mod = self
-            .env_mod
-            .map(|env_mod| Knob::parse(env_mod))
-            .transpose()?;
-        let decay = self.decay.map(|decay| Knob::parse(decay)).transpose()?;
-        let accent = self.accent.map(|accent| Knob::parse(accent)).transpose()?;
-        let waveform = self
-            .waveform
-            .map(|waveform| Waveform::parse(waveform))
-            .transpose()?;
-
+        let efx_notes = self.efx_notes.map(EFXNotes::parse).transpose()?;
+        let cut_off_freq = self.cut_off_freq.map(Knob::parse).transpose()?;
+        let resonance = self.resonance.map(Knob::parse).transpose()?;
+        let env_mod = self.env_mod.map(Knob::parse).transpose()?;
+        let decay = self.decay.map(Knob::parse).transpose()?;
+        let accent = self.accent.map(Knob::parse).transpose()?;
+        let waveform = self.waveform.map(Waveform::parse).transpose()?;
         Ok(NewTB303Pattern {
             author,
             title,
