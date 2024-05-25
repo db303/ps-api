@@ -28,11 +28,11 @@ pub struct PatternTB303Request {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct StepTB303 {
-    pub note: String,
-    pub stem: String,
+    pub note: Option<String>,
+    pub stem: Option<String>,
     pub time: String,
-    pub accent: bool,
-    pub slide: bool,
+    pub accent: Option<bool>,
+    pub slide: Option<bool>,
 }
 
 #[derive(serde::Serialize)]
@@ -56,23 +56,23 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
-        let author = self.author.map(Author::parse).transpose()?;
+        let author = self.author.map(Author::parse).transpose().map_err(|e| e.to_string())?;
         let title = Title::parse(self.title).map_err(|e| e.to_string())?;
-        let efx_notes = self.efx_notes.map(EFXNotes::parse).transpose()?;
-        let cut_off_freq = self.cut_off_freq.map(Knob::parse).transpose()?;
-        let resonance = self.resonance.map(Knob::parse).transpose()?;
-        let env_mod = self.env_mod.map(Knob::parse).transpose()?;
-        let decay = self.decay.map(Knob::parse).transpose()?;
-        let accent = self.accent.map(Knob::parse).transpose()?;
-        let waveform = self.waveform.map(Waveform::parse).transpose()?;
+        let efx_notes = self.efx_notes.map(EFXNotes::parse).transpose().map_err(|e| e.to_string())?;
+        let cut_off_freq = self.cut_off_freq.map(Knob::parse).transpose().map_err(|e| e.to_string())?;
+        let resonance = self.resonance.map(Knob::parse).transpose().map_err(|e| e.to_string())?;
+        let env_mod = self.env_mod.map(Knob::parse).transpose().map_err(|e| e.to_string())?;
+        let decay = self.decay.map(Knob::parse).transpose().map_err(|e| e.to_string())?;
+        let accent = self.accent.map(Knob::parse).transpose().map_err(|e| e.to_string())?;
+        let waveform = self.waveform.map(Waveform::parse).transpose().map_err(|e| e.to_string())?;
 
         let steps = self
             .steps
-            .iter()
+            .into_iter()
             .map(|step| {
-                let note = Note::parse(step.note.clone()).map_err(|e| e.to_string())?;
-                let stem = Stem::parse(step.stem.clone()).map_err(|e| e.to_string())?;
-                let time = Time::parse(step.time.clone()).map_err(|e| e.to_string())?;
+                let note = step.note.map(Note::parse).transpose().map_err(|e| e.to_string())?;
+                let stem = step.stem.map(Stem::parse).transpose().map_err(|e| e.to_string())?;
+                let time = Time::parse(step.time).map_err(|e| e.to_string())?;
                 let accent = step.accent;
                 let slide = step.slide;
 

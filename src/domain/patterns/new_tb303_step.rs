@@ -1,9 +1,9 @@
 use crate::domain::{Note, Stem, Time};
 
 pub struct NewTB303Step {
-    pub note: Note,
-    pub stem: Stem,
+    pub note: Option<Note>,
+    pub stem: Option<Stem>,
     pub time: Time,
-    pub accent: bool,
-    pub slide: bool,
+    pub accent: Option<bool>,
+    pub slide: Option<bool>,
 }

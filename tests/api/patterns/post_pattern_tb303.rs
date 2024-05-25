@@ -42,15 +42,16 @@ async fn post_pattern_tb303_persists_the_new_pattern() {
         .await
         .expect("Failed to fetch saved pattern");
 
-    assert_eq!(saved.author, Some("Author 1".to_string()));
-    assert_eq!(saved.title, Some("My first pattern".to_string()));
-    assert_eq!(saved.efx_notes, Some("Some notes".to_string()));
+    assert_eq!(saved.author, Some("Humanoind".to_string()));
+    assert_eq!(saved.title, Some("Stakker humanoid".to_string()));
+    assert_eq!(saved.efx_notes, Some("This is a demo pattern for the TB-303. It's a classic acid house pattern.".to_string()));
     assert_eq!(saved.waveform, Some("sawtooth".to_string()));
     assert_eq!(saved.cutoff_frequency, Some(10));
     assert_eq!(saved.resonance, Some(20));
     assert_eq!(saved.env_mod, Some(30));
     assert_eq!(saved.decay, Some(40));
     assert_eq!(saved.accent, Some(50));
+
 }
 
 #[tokio::test]
@@ -233,7 +234,7 @@ async fn post_pattern_tb303_returns_400_when_required_step_fields_are_missing() 
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let fields_to_remove = vec!["note", "stem", "time", "accent", "slide"];
+    let fields_to_remove = vec!["time"];
 
     // Act - Part 1 - Login
     app.post_login(
@@ -327,9 +328,9 @@ async fn post_pattern_tb303_fails_if_there_is_a_fatal_database_error() {
 
 fn get_valid_data() -> String {
     r#"{
-        "author": "Author 1",
-        "title": "My first pattern",
-        "efx_notes": "Some notes",
+        "author": "Humanoind",
+        "title": "Stakker humanoid",
+        "efx_notes": "This is a demo pattern for the TB-303. It's a classic acid house pattern.",
         "waveform": "sawtooth",
         "cut_off_freq": 10,
         "resonance": 20,
@@ -338,116 +339,91 @@ fn get_valid_data() -> String {
         "accent": 50,
         "steps": [
             {
-                "note": "C",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
+                "number": 1,
+                "note": "D",
+                "time": "note"
             },
             {
+                "number": 2,
+                "note": "D",
+                "time": "note"
+            },
+            {
+                "number": 3,
+                "note": "B",
+                "stem": "down",
+                "time": "note"
+            },
+            {
+                "number": 4,
+                "stem": "down",
+                "time": "tied"
+            },
+            {
+                "number": 5,
+                "note": "B",
+                "stem": "down",
+                "time": "note",
+                "slide": true
+            },
+            {
+                "number": 6,
+                "note": "B",
+                "stem": "down",
+                "time": "note",
+                "accent": true,
+                "slide": true
+            },
+            {
+                "number": 7,
+                "time": "tied"
+            },
+            {
+                "number": 8,
+                "note": "B",
+                "stem": "down",
+                "time": "note"
+            },
+            {
+                "number": 9,
                 "note": "D",
                 "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
+                "time": "note"
             },
             {
-                "note": "E",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
-                "note": "F",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
-            },
-            {
-                "note": "G",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
-                "note": "A",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
-            },
-            {
-                "note": "B",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
-                "note": "Ch",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
-            },
-            {
-                "note": "C",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
+                "number": 10,
                 "note": "D",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
+                "time": "note"
             },
             {
-                "note": "E",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
-                "note": "F",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
-            },
-            {
-                "note": "G",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
-            },
-            {
-                "note": "A",
-                "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
-            },
-            {
+                "number": 11,
                 "note": "B",
-                "stem": "up",
-                "time": "note",
-                "accent": true,
-                "slide": false
+                "stem": "down",
+                "time": "note"
             },
             {
-                "note": "Ch",
+                "number": 12,
+                "note": "D",
+                "time": "note"
+            },
+            {
+                "number": 13,
+                "time": "tied"
+            },
+            {
+                "number": 14,
+                "note": "B",
                 "stem": "down",
-                "time": "note",
-                "accent": false,
-                "slide": true
+                "time": "note"
+            },
+            {
+                "number": 15,
+                "note": "F",
+                "time": "note"
+            },
+            {
+                "number": 16,
+                "time": "tied"
             }
         ]
     }

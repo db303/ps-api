@@ -7,7 +7,7 @@ impl Stem {
 
         if is_not_valid_stem {
             Err(format!(
-                "{} is not a valid stem. Can only be one of 'up', 'down', 'none'",
+                "{} is not a valid stem. Can only be one of 'up', 'down'",
                 s
             ))
         } else {
@@ -35,7 +35,7 @@ mod tests {
 
     #[test]
     fn valid_stems_are_accepted() {
-        for stem in vec!["up", "down", "none"] {
+        for stem in vec!["up", "down"] {
             assert_ok!(Stem::parse(stem.to_string()));
         }
     }
