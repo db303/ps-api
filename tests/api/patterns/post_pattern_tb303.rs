@@ -44,14 +44,18 @@ async fn post_pattern_tb303_persists_the_new_pattern() {
 
     assert_eq!(saved.author, Some("Humanoind".to_string()));
     assert_eq!(saved.title, Some("Stakker humanoid".to_string()));
-    assert_eq!(saved.efx_notes, Some("This is a demo pattern for the TB-303. It's a classic acid house pattern.".to_string()));
+    assert_eq!(
+        saved.efx_notes,
+        Some(
+            "This is a demo pattern for the TB-303. It's a classic acid house pattern.".to_string()
+        )
+    );
     assert_eq!(saved.waveform, Some("sawtooth".to_string()));
     assert_eq!(saved.cutoff_frequency, Some(10));
     assert_eq!(saved.resonance, Some(20));
     assert_eq!(saved.env_mod, Some(30));
     assert_eq!(saved.decay, Some(40));
     assert_eq!(saved.accent, Some(50));
-
 }
 
 #[tokio::test]
