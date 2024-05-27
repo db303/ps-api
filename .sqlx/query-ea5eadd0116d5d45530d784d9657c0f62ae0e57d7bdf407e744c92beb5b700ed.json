@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO patterns_tb303 (\n            pattern_id,\n            user_id,\n            author,\n            title,\n            efx_notes,\n            waveform,\n            cutoff_frequency,\n            resonance,\n            env_mod,\n            decay,\n            accent,\n            updated_at,\n            created_at )\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ea5eadd0116d5d45530d784d9657c0f62ae0e57d7bdf407e744c92beb5b700ed"
+}

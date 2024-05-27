@@ -122,6 +122,13 @@ impl std::fmt::Debug for ActivationError {
 }
 
 impl ResponseError for ActivationError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::UnknownToken => StatusCode::UNAUTHORIZED,
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
     fn error_response(&self) -> HttpResponse {
         match self {
             Self::UnexpectedError(_) => {
@@ -130,13 +137,6 @@ impl ResponseError for ActivationError {
             Self::UnknownToken => {
                 HttpResponse::build(self.status_code()).json(get_fail_response(self.to_string()))
             }
-        }
-    }
-
-    fn status_code(&self) -> StatusCode {
-        match self {
-            Self::UnknownToken => StatusCode::UNAUTHORIZED,
-            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
