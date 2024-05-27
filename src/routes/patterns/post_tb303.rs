@@ -10,42 +10,60 @@ use {
     chrono::Utc,
     sqlx::{Executor, PgPool, Postgres, Transaction},
     std::convert::TryInto,
+    utoipa::ToSchema,
     uuid::Uuid,
 };
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, ToSchema)]
 pub struct PatternTB303Request {
+    #[schema(example = "user123")]
     author: Option<String>,
+    #[schema(example = "My first pattern", required = true)]
     title: String,
+    #[schema(example = "This is a cool pattern")]
     efx_notes: Option<String>,
+    #[schema(example = "sawtooth")]
     waveform: Option<String>,
+    #[schema(example = "100")]
     cut_off_freq: Option<i32>,
+    #[schema(example = "50")]
     resonance: Option<i32>,
+    #[schema(example = "25")]
     env_mod: Option<i32>,
+    #[schema(example = "50")]
     decay: Option<i32>,
+    #[schema(example = "75")]
     accent: Option<i32>,
     steps: Vec<StepTB303>,
 }
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, ToSchema)]
 pub struct StepTB303 {
+    #[schema(example = "1", required = true)]
     pub number: i32,
+    #[schema(example = "C")]
     pub note: Option<String>,
+    #[schema(example = "up")]
     pub stem: Option<String>,
+    #[schema(example = "note")]
     pub time: String,
+    #[schema(example = "true")]
     pub accent: Option<bool>,
+    #[schema(example = "false")]
     pub slide: Option<bool>,
 }
 
-#[derive(serde::Serialize)]
-pub struct PatternResponse {
+#[derive(serde::Serialize, ToSchema)]
+pub struct PatternTB303Response {
+    #[schema(example = "success")]
     status: String,
-    data: PatternResponseData,
+    data: PatternTB303ResponseData,
 }
 
-#[derive(serde::Serialize)]
-pub struct PatternResponseData {
-    id: Uuid,
+#[derive(serde::Serialize, ToSchema)]
+pub struct PatternTB303ResponseData {
+    #[schema(example = "123e4567-e89b-12d3-a456-426614174000")]
+    id: String,
 }
 
 #[derive(serde::Serialize)]
@@ -60,8 +78,8 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
         // Helper function to reduce code repetition
         fn parse_optional<T, U, F>(opt: Option<U>, parse_fn: F) -> Result<Option<T>, String>
-            where
-                F: FnOnce(U) -> Result<T, String>,
+        where
+            F: FnOnce(U) -> Result<T, String>,
         {
             opt.map(parse_fn).transpose().map_err(|e| e.to_string())
         }
@@ -76,16 +94,20 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
         let accent = parse_optional(self.accent, |v| Knob::parse(v))?;
         let waveform = parse_optional(self.waveform, Waveform::parse)?;
 
-        let steps: Result<Vec<NewTB303Step>, String> = self.steps.into_iter().map(|step| {
-            Ok(NewTB303Step {
-                number: Number::parse(step.number).map_err(|e| e.to_string())?,
-                note: parse_optional(step.note, Note::parse)?,
-                stem: parse_optional(step.stem, Stem::parse)?,
-                time: Time::parse(step.time).map_err(|e| e.to_string())?,
-                accent: step.accent,
-                slide: step.slide,
+        let steps: Result<Vec<NewTB303Step>, String> = self
+            .steps
+            .into_iter()
+            .map(|step| {
+                Ok(NewTB303Step {
+                    number: Number::parse(step.number).map_err(|e| e.to_string())?,
+                    note: parse_optional(step.note, Note::parse)?,
+                    stem: parse_optional(step.stem, Stem::parse)?,
+                    time: Time::parse(step.time).map_err(|e| e.to_string())?,
+                    accent: step.accent,
+                    slide: step.slide,
+                })
             })
-        }).collect();
+            .collect();
 
         let steps = steps?;
         if steps.len() > 16 {
@@ -115,12 +137,22 @@ pub enum CreatePatternError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
+#[utoipa::path(
+    request_body = PatternTB303Request,
+    post,
+    path = "/api/v1/patterns/tb303",
+    responses(
+    (status = 200, description = "Pattern created successfully", body = PatternTB303Response),
+    (status = 400, description = "Invalid input"),
+    (status = 500, description = "Internal server error")
+    ),
+)]
 #[tracing::instrument(name = "Adding new pattern", skip(pattern, pool))]
 pub async fn create_tb303_pattern(
     pattern: web::Json<PatternTB303Request>,
     pool: web::Data<PgPool>,
     user_id: web::ReqData<UserId>,
-) -> Result<web::Json<PatternResponse>, CreatePatternError> {
+) -> Result<web::Json<PatternTB303Response>, CreatePatternError> {
     let user_id = user_id.into_inner();
     let new_pattern = pattern
         .0
@@ -145,9 +177,11 @@ pub async fn create_tb303_pattern(
         .await
         .context("Failed to commit the transaction to save tb303 pattern.")?;
 
-    Ok(web::Json(PatternResponse {
+    Ok(web::Json(PatternTB303Response {
         status: "success".to_string(),
-        data: PatternResponseData { id: pattern_id },
+        data: PatternTB303ResponseData {
+            id: pattern_id.to_string(),
+        },
     }))
 }
 

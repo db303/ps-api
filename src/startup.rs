@@ -99,6 +99,7 @@ async fn run(
             auth::activate_resend,
             auth::request_password_reset,
             auth::change_password,
+            patterns::create_tb303_pattern
         ),
         components(schemas(
             auth::SignupRequest,
@@ -111,6 +112,11 @@ async fn run(
             auth::PasswordResetRequest,
             auth::PasswordResetResponse,
             auth::ChangePasswordRequest,
+            auth::ChangePasswordResponse,
+            patterns::PatternTB303Request,
+            patterns::StepTB303,
+            patterns::PatternTB303Response,
+            patterns::PatternTB303ResponseData
         ))
     )]
     struct ApiDoc;

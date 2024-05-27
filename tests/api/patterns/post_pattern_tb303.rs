@@ -302,7 +302,7 @@ async fn post_pattern_tb303_returns_400_when_required_step_fields_are_missing() 
     let app = spawn_app().await;
     let valid_data = get_valid_data();
 
-    let fields_to_remove = vec!["time"];
+    let fields_to_remove = vec!["number", "time"];
 
     // Act - Part 1 - Login
     app.post_login(
