@@ -80,7 +80,7 @@ async fn post_pattern_tb303_persists_the_new_pattern_steps() {
     // Assert
     assert_eq!(200, response.status().as_u16());
 
-    let saved = sqlx::query!("SELECT note, stem, time, slide, accent FROM steps_tb303")
+    let saved = sqlx::query!("SELECT number, note, stem, time, slide, accent FROM steps_tb303")
         .fetch_all(&app.db_pool)
         .await
         .expect("Failed to fetch saved steps");
@@ -88,7 +88,7 @@ async fn post_pattern_tb303_persists_the_new_pattern_steps() {
     assert_eq!(saved.len(), 16);
 
     let first_step = &saved[0];
-    //assert_eq!(first_step.number, 1);
+    assert_eq!(first_step.number, 1);
     assert_eq!(first_step.note, Some("D".to_string()));
     assert_eq!(first_step.stem, None);
     assert_eq!(first_step.time, Some("note".to_string()));
@@ -96,22 +96,30 @@ async fn post_pattern_tb303_persists_the_new_pattern_steps() {
     assert_eq!(first_step.accent, Some(false));
 
     let second_step = &saved[1];
-    //assert_eq!(second_step.number, 2);
+    assert_eq!(second_step.number, 2);
     assert_eq!(second_step.note, Some("D".to_string()));
     assert_eq!(second_step.stem, None);
     assert_eq!(second_step.time, Some("note".to_string()));
 
     let third_step = &saved[2];
-    //assert_eq!(third_step.number, 3);
+    assert_eq!(third_step.number, 3);
     assert_eq!(third_step.note, Some("B".to_string()));
     assert_eq!(third_step.stem, Some("down".to_string()));
     assert_eq!(third_step.time, Some("note".to_string()));
 
     let fourth_step = &saved[3];
-    //assert_eq!(fourth_step.number, 4);
+    assert_eq!(fourth_step.number, 4);
     assert_eq!(fourth_step.note, None);
     assert_eq!(fourth_step.stem, Some("down".to_string()));
     assert_eq!(fourth_step.time, Some("tied".to_string()));
+
+    let sixth_step = &saved[5];
+    assert_eq!(sixth_step.number, 6);
+    assert_eq!(sixth_step.note, Some("B".to_string()));
+    assert_eq!(sixth_step.stem, Some("down".to_string()));
+    assert_eq!(sixth_step.time, Some("note".to_string()));
+    assert_eq!(sixth_step.slide, Some(true));
+    assert_eq!(sixth_step.accent, Some(true));
 }
 
 #[tokio::test]

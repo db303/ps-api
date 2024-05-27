@@ -2,6 +2,7 @@
 CREATE TABLE steps_tb303(
     step_id uuid,
     pattern_id uuid NOT NULL REFERENCES patterns_tb303 (pattern_id),
+    number INTEGER NOT NULL,
     note TEXT,
     stem TEXT,
     "time" TEXT,

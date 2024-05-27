@@ -1,7 +1,8 @@
 use {
     crate::authentication::UserId,
     crate::domain::{
-        Author, EFXNotes, Knob, NewTB303Pattern, NewTB303Step, Note, Stem, Time, Title, Waveform,
+        Author, EFXNotes, Knob, NewTB303Pattern, NewTB303Step, Note, Number, Stem, Time, Title,
+        Waveform,
     },
     crate::utils::error_chain_fmt,
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
@@ -28,6 +29,7 @@ pub struct PatternTB303Request {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct StepTB303 {
+    pub number: i32,
     pub note: Option<String>,
     pub stem: Option<String>,
     pub time: String,
@@ -102,6 +104,7 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
             .steps
             .into_iter()
             .map(|step| {
+                let number = Number::parse(step.number).map_err(|e| e.to_string())?;
                 let note = step
                     .note
                     .map(Note::parse)
@@ -117,6 +120,7 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
                 let slide = step.slide;
 
                 Ok(NewTB303Step {
+                    number,
                     note,
                     stem,
                     time,
@@ -254,6 +258,10 @@ pub async fn insert_pattern(
     Ok(pattern_id)
 }
 
+#[tracing::instrument(
+    name = "Saving new tb303 pattern steps in the database",
+    skip(transaction, pattern_id, steps)
+)]
 pub async fn insert_steps_tb303(
     transaction: &mut Transaction<'_, Postgres>,
     pattern_id: Uuid,
@@ -266,6 +274,7 @@ pub async fn insert_steps_tb303(
             INSERT INTO steps_tb303 (
                 step_id,
                 pattern_id,
+                number,
                 note,
                 stem,
                 time,
@@ -273,10 +282,11 @@ pub async fn insert_steps_tb303(
                 slide,
                 created_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             "#,
             step_id,
             pattern_id,
+            step.number.as_ref(),
             step.note.as_ref().map(|n| n.as_ref()),
             step.stem.as_ref().map(|s| s.as_ref()),
             step.time.as_ref(),

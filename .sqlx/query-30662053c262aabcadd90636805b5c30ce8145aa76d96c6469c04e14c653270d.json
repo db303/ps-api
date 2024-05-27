@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO steps_tb303 (\n                step_id,\n                pattern_id,\n                note,\n                stem,\n                time,\n                accent,\n                slide,\n                created_at\n            )\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "30662053c262aabcadd90636805b5c30ce8145aa76d96c6469c04e14c653270d"
+}
