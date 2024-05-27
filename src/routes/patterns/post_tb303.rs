@@ -87,11 +87,11 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
         let author = parse_optional(self.author, Author::parse)?;
         let title = Title::parse(self.title).map_err(|e| e.to_string())?;
         let efx_notes = parse_optional(self.efx_notes, EFXNotes::parse)?;
-        let cut_off_freq = parse_optional(self.cut_off_freq, |v| Knob::parse(v))?;
-        let resonance = parse_optional(self.resonance, |v| Knob::parse(v))?;
-        let env_mod = parse_optional(self.env_mod, |v| Knob::parse(v))?;
-        let decay = parse_optional(self.decay, |v| Knob::parse(v))?;
-        let accent = parse_optional(self.accent, |v| Knob::parse(v))?;
+        let cut_off_freq = parse_optional(self.cut_off_freq, Knob::parse)?;
+        let resonance = parse_optional(self.resonance, Knob::parse)?;
+        let env_mod = parse_optional(self.env_mod, Knob::parse)?;
+        let decay = parse_optional(self.decay, Knob::parse)?;
+        let accent = parse_optional(self.accent, Knob::parse)?;
         let waveform = parse_optional(self.waveform, Waveform::parse)?;
 
         let steps: Result<Vec<NewTB303Step>, String> = self
