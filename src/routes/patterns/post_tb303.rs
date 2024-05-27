@@ -58,78 +58,36 @@ impl TryInto<NewTB303Pattern> for PatternTB303Request {
     type Error = String;
 
     fn try_into(self) -> Result<NewTB303Pattern, Self::Error> {
-        let author = self
-            .author
-            .map(Author::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
+        // Helper function to reduce code repetition
+        fn parse_optional<T, U, F>(opt: Option<U>, parse_fn: F) -> Result<Option<T>, String>
+            where
+                F: FnOnce(U) -> Result<T, String>,
+        {
+            opt.map(parse_fn).transpose().map_err(|e| e.to_string())
+        }
+
+        let author = parse_optional(self.author, Author::parse)?;
         let title = Title::parse(self.title).map_err(|e| e.to_string())?;
-        let efx_notes = self
-            .efx_notes
-            .map(EFXNotes::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let cut_off_freq = self
-            .cut_off_freq
-            .map(Knob::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let resonance = self
-            .resonance
-            .map(Knob::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let env_mod = self
-            .env_mod
-            .map(Knob::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let decay = self
-            .decay
-            .map(Knob::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let accent = self
-            .accent
-            .map(Knob::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
-        let waveform = self
-            .waveform
-            .map(Waveform::parse)
-            .transpose()
-            .map_err(|e| e.to_string())?;
+        let efx_notes = parse_optional(self.efx_notes, EFXNotes::parse)?;
+        let cut_off_freq = parse_optional(self.cut_off_freq, |v| Knob::parse(v))?;
+        let resonance = parse_optional(self.resonance, |v| Knob::parse(v))?;
+        let env_mod = parse_optional(self.env_mod, |v| Knob::parse(v))?;
+        let decay = parse_optional(self.decay, |v| Knob::parse(v))?;
+        let accent = parse_optional(self.accent, |v| Knob::parse(v))?;
+        let waveform = parse_optional(self.waveform, Waveform::parse)?;
 
-        let steps = self
-            .steps
-            .into_iter()
-            .map(|step| {
-                let number = Number::parse(step.number).map_err(|e| e.to_string())?;
-                let note = step
-                    .note
-                    .map(Note::parse)
-                    .transpose()
-                    .map_err(|e| e.to_string())?;
-                let stem = step
-                    .stem
-                    .map(Stem::parse)
-                    .transpose()
-                    .map_err(|e| e.to_string())?;
-                let time = Time::parse(step.time).map_err(|e| e.to_string())?;
-                let accent = step.accent;
-                let slide = step.slide;
-
-                Ok(NewTB303Step {
-                    number,
-                    note,
-                    stem,
-                    time,
-                    accent,
-                    slide,
-                })
+        let steps: Result<Vec<NewTB303Step>, String> = self.steps.into_iter().map(|step| {
+            Ok(NewTB303Step {
+                number: Number::parse(step.number).map_err(|e| e.to_string())?,
+                note: parse_optional(step.note, Note::parse)?,
+                stem: parse_optional(step.stem, Stem::parse)?,
+                time: Time::parse(step.time).map_err(|e| e.to_string())?,
+                accent: step.accent,
+                slide: step.slide,
             })
-            .collect::<Result<Vec<NewTB303Step>, String>>()?;
+        }).collect();
 
+        let steps = steps?;
         if steps.len() > 16 {
             return Err("A pattern can only have up to 16 steps.".to_string());
         }
