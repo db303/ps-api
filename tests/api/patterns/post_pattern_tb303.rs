@@ -59,6 +59,62 @@ async fn post_pattern_tb303_persists_the_new_pattern() {
 }
 
 #[tokio::test]
+async fn post_pattern_tb303_persists_the_new_pattern_steps() {
+    // Arrange
+    let app = spawn_app().await;
+    let body = get_valid_data();
+
+    // // Act - Part 1 - Login
+    app.post_login(
+        serde_json::json!({
+            "username": &app.test_user.username,
+            "password": &app.test_user.password
+        })
+        .to_string(),
+    )
+    .await;
+
+    // Act - Part 2 - Create pattern
+    let response = app.post_patterns_tb303(body.into()).await;
+
+    // Assert
+    assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!("SELECT note, stem, time, slide, accent FROM steps_tb303")
+        .fetch_all(&app.db_pool)
+        .await
+        .expect("Failed to fetch saved steps");
+
+    assert_eq!(saved.len(), 16);
+
+    let first_step = &saved[0];
+    //assert_eq!(first_step.number, 1);
+    assert_eq!(first_step.note, Some("D".to_string()));
+    assert_eq!(first_step.stem, None);
+    assert_eq!(first_step.time, Some("note".to_string()));
+    assert_eq!(first_step.slide, Some(false));
+    assert_eq!(first_step.accent, Some(false));
+
+    let second_step = &saved[1];
+    //assert_eq!(second_step.number, 2);
+    assert_eq!(second_step.note, Some("D".to_string()));
+    assert_eq!(second_step.stem, None);
+    assert_eq!(second_step.time, Some("note".to_string()));
+
+    let third_step = &saved[2];
+    //assert_eq!(third_step.number, 3);
+    assert_eq!(third_step.note, Some("B".to_string()));
+    assert_eq!(third_step.stem, Some("down".to_string()));
+    assert_eq!(third_step.time, Some("note".to_string()));
+
+    let fourth_step = &saved[3];
+    //assert_eq!(fourth_step.number, 4);
+    assert_eq!(fourth_step.note, None);
+    assert_eq!(fourth_step.stem, Some("down".to_string()));
+    assert_eq!(fourth_step.time, Some("tied".to_string()));
+}
+
+#[tokio::test]
 async fn post_pattern_tb303_returns_400_when_required_fields_are_missing() {
     // Arrange
     let app = spawn_app().await;

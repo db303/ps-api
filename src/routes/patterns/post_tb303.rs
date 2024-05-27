@@ -174,6 +174,10 @@ pub async fn create_tb303_pattern(
         .await
         .context("Failed to insert new pattern in the database.")?;
 
+    insert_steps_tb303(&mut transaction, pattern_id, &new_pattern.steps)
+        .await
+        .context("Failed to insert new pattern steps in the database.")?;
+
     transaction
         .commit()
         .await
@@ -248,6 +252,43 @@ pub async fn insert_pattern(
     transaction.execute(query).await?;
 
     Ok(pattern_id)
+}
+
+pub async fn insert_steps_tb303(
+    transaction: &mut Transaction<'_, Postgres>,
+    pattern_id: Uuid,
+    steps: &[NewTB303Step],
+) -> Result<(), sqlx::Error> {
+    for step in steps {
+        let step_id = Uuid::new_v4();
+        let query = sqlx::query!(
+            r#"
+            INSERT INTO steps_tb303 (
+                step_id,
+                pattern_id,
+                note,
+                stem,
+                time,
+                accent,
+                slide,
+                created_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            "#,
+            step_id,
+            pattern_id,
+            step.note.as_ref().map(|n| n.as_ref()),
+            step.stem.as_ref().map(|s| s.as_ref()),
+            step.time.as_ref(),
+            step.accent.unwrap_or(false),
+            step.slide.unwrap_or(false),
+            Utc::now()
+        );
+
+        transaction.execute(query).await?;
+    }
+
+    Ok(())
 }
 
 impl std::fmt::Debug for CreatePatternError {
