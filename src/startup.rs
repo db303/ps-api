@@ -1,3 +1,5 @@
+use actix_web_lab::middleware::from_fn;
+use secrecy::{ExposeSecret, SecretString};
 use {
     crate::authentication::reject_anonymous_users,
     crate::configuration::{DatabaseSettings, Settings},
@@ -9,8 +11,6 @@ use {
         cookie::Key, dev::Server, error, error::JsonPayloadError, web, web::Data, web::JsonConfig,
         App, HttpResponse, HttpServer,
     },
-    actix_web_lab::middleware::from_fn,
-    secrecy::{ExposeSecret, Secret},
     sqlx::{postgres::PgPoolOptions, PgPool},
     std::net::TcpListener,
     tracing_actix_web::TracingLogger,
@@ -79,8 +79,8 @@ async fn run(
     db_pool: PgPool,
     email_client: EmailClient,
     base_url: String,
-    hmac_secret: Secret<String>,
-    redis_uri: Secret<String>,
+    hmac_secret: SecretString,
+    redis_uri: SecretString,
 ) -> Result<Server, anyhow::Error> {
     let db_pool = Data::new(db_pool);
     let email_client = Data::new(email_client);
@@ -163,7 +163,7 @@ async fn run(
             .app_data(email_client.clone())
             .app_data(base_url.clone())
             .app_data(ApiError::json_error(JsonConfig::default()))
-            .app_data(Data::new(HmacSecret(hmac_secret.expose_secret().clone())))
+            .app_data(Data::new(HmacSecret(hmac_secret.expose_secret().to_string())))
     })
     .listen(listener)?
     .run();

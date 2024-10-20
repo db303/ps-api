@@ -1,3 +1,4 @@
+use secrecy::SecretString;
 use {
     crate::{
         domain::{NewUser, UserEmail, UserName, UserPassword},
@@ -9,7 +10,6 @@ use {
     anyhow::Context,
     chrono::Utc,
     rand::{distributions::Alphanumeric, thread_rng, Rng},
-    secrecy::Secret,
     sqlx::{Executor, PgPool, Postgres, Transaction},
     std::collections::HashMap,
     utoipa::ToSchema,
@@ -180,7 +180,7 @@ pub async fn send_activation_email(
 async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
-) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
+) -> Result<Option<(uuid::Uuid, SecretString)>, anyhow::Error> {
     let row = sqlx::query!(
         r#"SELECT user_id, username, email, password_hash FROM users WHERE username = $1"#,
         username
@@ -188,7 +188,7 @@ async fn get_stored_credentials(
     .fetch_optional(pool)
     .await
     .context("Failed to perform a query to retrieve stored credentials.")?
-    .map(|row| (row.user_id, Secret::new(row.password_hash)));
+    .map(|row| (row.user_id, row.password_hash.into()));
     Ok(row)
 }
 

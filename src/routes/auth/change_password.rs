@@ -1,22 +1,47 @@
+use std::borrow::Cow;
+use secrecy::{ExposeSecret, SecretString};
+use utoipa::openapi::{RefOr, Schema};
+use utoipa::PartialSchema;
 use {
     crate::domain::UserPassword,
     crate::utils::{error_chain_fmt, get_error_response, get_fail_response, make_password_hash},
     actix_web::{http::StatusCode, web, HttpResponse, ResponseError},
     anyhow::Context,
-    secrecy::{ExposeSecret, Secret},
     sqlx::PgPool,
     utoipa::ToSchema,
     uuid::Uuid,
 };
+
+#[derive(serde::Deserialize)]
+#[serde(transparent)]
+pub struct SecretSchemaString(pub SecretString);
+
+impl PartialSchema for SecretSchemaString {
+    fn schema() -> RefOr<Schema> {
+        String::schema()
+    }
+}
+
+impl From<SecretString> for SecretSchemaString {
+    fn from(value: SecretString) -> Self {
+        SecretSchemaString(value)
+    }
+}
+
+impl ToSchema for SecretSchemaString {
+    fn name() -> Cow<'static, str> {
+        str::name()
+    }
+}
 
 #[derive(serde::Deserialize, ToSchema)]
 pub struct ChangePasswordRequest {
     #[schema(example = "2Ig5l6jcH1aZP7Ipc30XHIMEq")]
     reset_token: String,
     #[schema(example = "Password1234!", required = true)]
-    password: Secret<String>,
+    password: SecretSchemaString,
     #[schema(example = "Password1234!", required = true)]
-    password_again: Secret<String>,
+    password_again: SecretSchemaString,
 }
 
 #[derive(serde::Serialize, ToSchema)]
@@ -48,11 +73,11 @@ pub async fn change_password(
         .context("Failed to retrieve the user id associated with the provided token.")?
         .ok_or(ChangePasswordError::UnknownToken)?;
 
-    if request.0.password.expose_secret() != request.0.password_again.expose_secret() {
+    if request.0.password.0.expose_secret() != request.0.password_again.0.expose_secret() {
         return Err(ChangePasswordError::PasswordsWontMatch);
     }
 
-    let password = UserPassword::parse(request.0.password.expose_secret().to_string())
+    let password = UserPassword::parse(request.0.password.0.expose_secret().to_string())
         .map_err(ChangePasswordError::ValidationError)?;
 
     update_user_password(&pool, password, user_id)
